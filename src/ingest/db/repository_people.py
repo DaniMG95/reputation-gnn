@@ -1,5 +1,5 @@
 from neomodel import db
-from models import Person as PersonDB
+from ingest.db.models import Person as PersonDB
 from ingest.schemas.person import Person
 
 class RepositoryPeople:
@@ -21,10 +21,13 @@ class RepositoryPeople:
             for follower in followers:
                 follower_db = PersonDB.nodes.get(name=follower.name)
                 person_db.followers.connect(follower_db)
+            person_db.n_followers = len(person_db.followers)
         if following:
             for follow in following:
                 follow_db = PersonDB.nodes.get(name=follow.name)
                 person_db.following.connect(follow_db)
+            person_db.n_following = len(person_db.following)
+        person_db.save()
 
     @staticmethod
     def _transform_to_schem(person_db: PersonDB) -> Person:

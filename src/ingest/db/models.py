@@ -1,6 +1,6 @@
 from neomodel import (StructuredNode, StringProperty, IntegerProperty,
     UniqueIdProperty, RelationshipTo)
-import connection
+import ingest.db.connection
 
 class Person(StructuredNode):
     uid = UniqueIdProperty()

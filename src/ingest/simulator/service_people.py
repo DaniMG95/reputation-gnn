@@ -44,14 +44,30 @@ class ServicePeople:
             else:
                 n_followers = random.randint(0, followers)
             followers = random.sample(persons, n_followers)
-            self.repository_people.create_relationships(person=real_person, followers=followers)
-            for follower in followers:
-                self.repository_people.create_relationships(person=follower, following=[real_person])
+            self.create_relationships(person=real_person, followers=followers)
         bots = self.repository_people.get_persons_by_type(label=TypePerson.BOT.value)
         persons_follow_bots = random.sample(real_persons, n_persons_follow_bot)
         for person_to_bots in persons_follow_bots:
             bots_followed = random.sample(bots, n_bots_followed)
-            self.repository_people.create_relationships(person_to_bots, followers=[f])
+            self.create_relationships(person_to_bots, followers=[bots_followed])
+        influencers = self.repository_people.get_persons_by_type(label=TypePerson.INFLUENCER.value)
+        for influencer in influencers:
+            influencer.label = TypePerson.PERSON.value
+            self.repository_people.update_person(person=influencer)
+
+    def create_relationships_bot(self, range_bots_following_persons: tuple[int, int], n_bots_following_bots: int):
+        bots = self.repository_people.get_persons_by_type(label=TypePerson.BOT.value)
+        real_persons = self.repository_people.get_persons_by_type(label=TypePerson.PERSON.value)
+        real_persons += self.repository_people.get_persons_by_type(label=TypePerson.INFLUENCER.value)
+        for bot in bots:
+            bots_selected = bots[:]
+            bots_selected.remove(bot)
+            real_persons_selected = real_persons[:]
+            bots_selected = random.sample(bots_selected, n_bots_following_bots)
+            real_persons_selected = random.sample(real_persons_selected, random.randint(range_bots_following_persons[0],
+                                                                                        range_bots_following_persons[1]))
+            self.create_relationships(person=bot, following=bots_selected + real_persons_selected)
+
 
     def clean_persons(self):
         self.repository_people.delete_all()
