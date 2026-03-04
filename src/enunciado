@@ -1,0 +1,16 @@
+Nivel 1: El Átomo - "Clasificador de Reputación"
+Objetivo SE: Construir un sistema de etiquetado automático basado en la red.
+
+Datos: Grafo simple User -> FOLLOWS -> User.
+
+Entrenamiento GNN (GCN): Clasificación de nodos. El modelo aprende que si estás rodeado de bots, probablemente eres
+un bot (propagación de etiquetas).
+
+Caso de Uso SE (Software Engineering): Microservicio de Trust & Safety.
+
+El Producto: Un endpoint GET /user/{id}/trust-score.
+
+Lógica SE: Implementar una caché (Redis) para los resultados del modelo. No quieres re-entrenar ni re-calcular la
+GNN en cada petición. Si el score ya se calculó hace menos de 1 hora, se sirve desde Redis.
+
+Habilidad clave: Integración de ML en tiempo real con latencia baja.
