@@ -1,7 +1,7 @@
 from faker import Faker
 import random
 from enum import Enum
-from ingest.schemas.person import Person
+from ingest.schemas.person import PersonSchema
 from abc import ABC, abstractmethod
 
 class TypePerson(Enum):
@@ -68,13 +68,13 @@ class GeneratorPeople:
     def __iter__(self):
         return self
 
-    def __next__(self) -> Person:
+    def __next__(self) -> PersonSchema:
         if self.index >= self.n_people:
             raise StopIteration
         name = self.generator_names.generate_name()
         posts = random.randint(self.range_posts[0], self.range_posts[1])
         self.index += 1
-        return Person(name=name, posts=posts, n_followers=self.n_followers, n_following=self.n_following,
-                      label=self.type_person.value)
+        return PersonSchema(name=name, posts=posts, n_followers=self.n_followers, n_following=self.n_following,
+                      user_type=self.type_person.value)
 
 

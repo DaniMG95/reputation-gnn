@@ -1,3 +1,4 @@
 from neomodel import config
 
-config.database_url = 'bolt://neo4j:password@localhost:7687'
+def init_db_connection():
+    config.DATABASE_URL = 'bolt://neo4j:password@localhost:7687'

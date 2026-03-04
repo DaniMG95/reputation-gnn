@@ -1,8 +1,5 @@
-import random
-from ingest.schemas.person import Person
-
 from ingest.simulator.service_people import ServicePeople
-from ingest.simulator.generator_person import GeneratorPeople, TypePerson
+
 
 class SimulatorIngest:
 

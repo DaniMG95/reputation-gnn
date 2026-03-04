@@ -1,5 +1,5 @@
 from ingest.db.repository_people import RepositoryPeople
-from ingest.schemas.person import Person
+from ingest.schemas.person import PersonSchema
 from ingest.simulator.generator_person import TypePerson, GeneratorPeople
 import random
 
@@ -8,7 +8,8 @@ class ServicePeople:
     def __init__(self, repository_people: RepositoryPeople):
         self.repository_people = repository_people
 
-    def create_relationships(self, person: Person, followers: list[Person] = None, following: list[Person] = None):
+    def create_relationships(self, person: PersonSchema, followers: list[PersonSchema] = None,
+                             following: list[PersonSchema] = None):
         self.repository_people.create_relationships(person=person, followers=followers, following=following)
         if followers:
             for follower in followers:
@@ -34,31 +35,31 @@ class ServicePeople:
 
     def create_relationships_real_persons(self, followers: int, range_followers_influencers: tuple[int, int],
                                           n_persons_follow_bot: int, n_bots_followed: int):
-        real_persons = self.repository_people.get_persons_by_type(label=TypePerson.PERSON.value)
-        real_persons += self.repository_people.get_persons_by_type(label=TypePerson.INFLUENCER.value)
+        real_persons = self.repository_people.get_persons_by_type(user_type=TypePerson.PERSON.value)
+        real_persons += self.repository_people.get_persons_by_type(user_type=TypePerson.INFLUENCER.value)
         for real_person in real_persons:
             persons = real_persons[:]
             persons.remove(real_person)
-            if real_person.label == TypePerson.INFLUENCER.value:
+            if real_person.user_type == TypePerson.INFLUENCER.value:
                 n_followers = random.randint(range_followers_influencers[0], range_followers_influencers[1])
             else:
                 n_followers = random.randint(0, followers)
             followers = random.sample(persons, n_followers)
             self.create_relationships(person=real_person, followers=followers)
-        bots = self.repository_people.get_persons_by_type(label=TypePerson.BOT.value)
+        bots = self.repository_people.get_persons_by_type(user_type=TypePerson.BOT.value)
         persons_follow_bots = random.sample(real_persons, n_persons_follow_bot)
         for person_to_bots in persons_follow_bots:
             bots_followed = random.sample(bots, n_bots_followed)
             self.create_relationships(person_to_bots, followers=[bots_followed])
-        influencers = self.repository_people.get_persons_by_type(label=TypePerson.INFLUENCER.value)
+        influencers = self.repository_people.get_persons_by_type(user_type=TypePerson.INFLUENCER.value)
         for influencer in influencers:
-            influencer.label = TypePerson.PERSON.value
+            influencer.user_type = TypePerson.PERSON.value
             self.repository_people.update_person(person=influencer)
 
     def create_relationships_bot(self, range_bots_following_persons: tuple[int, int], n_bots_following_bots: int):
-        bots = self.repository_people.get_persons_by_type(label=TypePerson.BOT.value)
-        real_persons = self.repository_people.get_persons_by_type(label=TypePerson.PERSON.value)
-        real_persons += self.repository_people.get_persons_by_type(label=TypePerson.INFLUENCER.value)
+        bots = self.repository_people.get_persons_by_type(user_type=TypePerson.BOT.value)
+        real_persons = self.repository_people.get_persons_by_type(user_type=TypePerson.PERSON.value)
+        real_persons += self.repository_people.get_persons_by_type(user_type=TypePerson.INFLUENCER.value)
         for bot in bots:
             bots_selected = bots[:]
             bots_selected.remove(bot)

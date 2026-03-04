@@ -1,11 +1,10 @@
 from neomodel import (StructuredNode, StringProperty, IntegerProperty,
     UniqueIdProperty, RelationshipTo)
-import ingest.db.connection
 
 class Person(StructuredNode):
     uid = UniqueIdProperty()
     name = StringProperty(unique_index=True)
-    label = StringProperty()
+    user_type = StringProperty()
     posts = IntegerProperty()
     n_followers = IntegerProperty()
     n_following = IntegerProperty()

@@ -1,11 +1,11 @@
 from dataclasses import dataclass, field
 
 @dataclass
-class Person:
+class PersonSchema:
     name: str
-    label: str
+    user_type: str
     posts: int
     n_followers: int
     n_following: int
-    followers: list["Person"] = field(default_factory=list)
-    following: list["Person"] = field(default_factory=list)
+    followers: list["PersonSchema"] = field(default_factory=list)
+    following: list["PersonSchema"] = field(default_factory=list)
