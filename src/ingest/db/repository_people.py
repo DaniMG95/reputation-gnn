@@ -65,4 +65,5 @@ class RepositoryPeople:
         person_db.posts = person.posts
         person_db.n_followers = person.n_followers
         person_db.n_following = person.n_following
+        person_db.user_type = person.user_type
         person_db.save()

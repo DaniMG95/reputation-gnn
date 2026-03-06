@@ -1,12 +1,14 @@
 from ingest.db.repository_people import RepositoryPeople
 from ingest.schemas.person import PersonSchema
-from ingest.simulator.generator_person import TypePerson, GeneratorPeople
+from ingest.simulator.generator_person import TypePerson, GeneratorPeople, GeneratorNameFactory
 import random
+from ingest.logger import LoggerIngest
 
 
 class ServicePeople:
     def __init__(self, repository_people: RepositoryPeople):
         self.repository_people = repository_people
+        self.logger = LoggerIngest(name="service_people")
 
     def create_relationships(self, person: PersonSchema, followers: list[PersonSchema] = None,
                              following: list[PersonSchema] = None):
@@ -22,14 +24,23 @@ class ServicePeople:
                                max_posts_influencers: int, mean_posts_persons: int):
         n_persons = n_persons - n_bots
         n_persons_not_influencers = n_persons - n_influencers
+        generator_names_bot = GeneratorNameFactory.get_generator(type_person=TypePerson.BOT)
         generator_bot = GeneratorPeople(type_person=TypePerson.BOT, n_people=n_bots,
-                                        range_posts=(0, mean_posts_bots), n_followers=0, n_following=0)
+                                        range_posts=(0, mean_posts_bots), n_followers=0, n_following=0,
+                                        generator_names=generator_names_bot)
+        for bot in generator_bot:
+            self.repository_people.create_person(person=bot)
+
+        generator_names_person = GeneratorNameFactory.get_generator(type_person=TypePerson.PERSON,
+                                                                    prohibited_names=generator_names_bot.names)
+
         generator_influencers = GeneratorPeople(type_person=TypePerson.INFLUENCER, n_people=n_influencers,
                                                 range_posts=(mean_posts_persons, max_posts_influencers),
-                                                n_followers=0, n_following=0)
+                                                n_followers=0, n_following=0, generator_names=generator_names_person)
         generator_persons = GeneratorPeople(type_person=TypePerson.PERSON, n_people=n_persons_not_influencers,
-                                            range_posts=(0, mean_posts_persons), n_followers=0, n_following=0)
-        for generator in [generator_bot, generator_persons, generator_influencers]:
+                                            range_posts=(0, mean_posts_persons), n_followers=0, n_following=0,
+                                            generator_names=generator_names_person)
+        for generator in [generator_persons, generator_influencers]:
             for person in generator:
                 self.repository_people.create_person(person=person)
 
@@ -44,13 +55,13 @@ class ServicePeople:
                 n_followers = random.randint(range_followers_influencers[0], range_followers_influencers[1])
             else:
                 n_followers = random.randint(0, followers)
-            followers = random.sample(persons, n_followers)
-            self.create_relationships(person=real_person, followers=followers)
+            followers_selected = random.sample(persons, n_followers)
+            self.create_relationships(person=real_person, followers=followers_selected)
         bots = self.repository_people.get_persons_by_type(user_type=TypePerson.BOT.value)
         persons_follow_bots = random.sample(real_persons, n_persons_follow_bot)
         for person_to_bots in persons_follow_bots:
             bots_followed = random.sample(bots, n_bots_followed)
-            self.create_relationships(person_to_bots, followers=[bots_followed])
+            self.create_relationships(person_to_bots, followers=bots_followed)
         influencers = self.repository_people.get_persons_by_type(user_type=TypePerson.INFLUENCER.value)
         for influencer in influencers:
             influencer.user_type = TypePerson.PERSON.value

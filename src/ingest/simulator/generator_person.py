@@ -12,42 +12,52 @@ class TypePerson(Enum):
 
 class GeneratorNameInterface(ABC):
 
-    def __init__(self):
+    def __init__(self, prohibited_names: list[str] = None):
         self.faker = Faker()
+        self._prohibited_names = prohibited_names if prohibited_names else []
+        self._names = []
 
     @abstractmethod
     def generate_name(self):
         pass
+
+    @property
+    def names(self):
+        return self._names[:]
 
 
 class GeneratorNamePerson(GeneratorNameInterface):
     AGES = [str(i) for i in range(80, 100)] + ['0' + str(i) for i in range(0, 10)]
 
     def generate_name(self):
-        name = self.faker.first_name()
-        if random.choice([True, False]):
-            name = name + random.choice(self.AGES)
-        return name
-
+        while True:
+            name = self.faker.first_name()
+            if random.choice([True, False]):
+                name = name + random.choice(self.AGES)
+            if name not in self._prohibited_names and name not in self._names:
+                self._names.append(name)
+                return name
 
 
 class GeneratorNameBot(GeneratorNameInterface):
 
     def generate_name(self):
-        name = self.faker.first_name()
-        if random.choice([True, False]):
-            name = name + str(random.randint(0, 1000))
-        return name
-
+        while True:
+            name = self.faker.first_name()
+            if random.choice([True, False]):
+                name = name + str(random.randint(0, 1000))
+            if name not in self._prohibited_names and name not in self._names:
+                self._names.append(name)
+                return name
 
 class GeneratorNameFactory:
 
     @classmethod
-    def get_generator(cls, type_person: TypePerson) -> GeneratorNameInterface:
+    def get_generator(cls, type_person: TypePerson, prohibited_names: list[str] = None) -> GeneratorNameInterface:
         if type_person == TypePerson.BOT:
-            return GeneratorNameBot()
-        elif type_person in [TypePerson.PERSON, TypePerson.INFLUENCER]:
-            return GeneratorNamePerson()
+            return GeneratorNameBot(prohibited_names=prohibited_names)
+        elif type_person == TypePerson.PERSON:
+            return GeneratorNamePerson(prohibited_names=prohibited_names)
         else:
             raise ValueError(f"Not exist this type: {type_person}")
 
@@ -56,14 +66,14 @@ class GeneratorPeople:
 
 
     def __init__(self, type_person: TypePerson, n_people: int, range_posts: tuple, n_followers: int,
-                 n_following: int):
+                 n_following: int, generator_names: GeneratorNameInterface):
         self.type_person = type_person
         self.n_people = n_people
         self.range_posts = range_posts
         self.n_followers = n_followers
         self.n_following = n_following
         self.index = 0
-        self.generator_names = GeneratorNameFactory.get_generator(self.type_person)
+        self.generator_names = generator_names
 
     def __iter__(self):
         return self
