@@ -13,12 +13,6 @@ class ServicePeople:
     def create_relationships(self, person: PersonSchema, followers: list[PersonSchema] = None,
                              following: list[PersonSchema] = None):
         self.repository_people.create_relationships(person=person, followers=followers, following=following)
-        if followers:
-            for follower in followers:
-                self.repository_people.create_relationships(follower, following=[person])
-        if following:
-            for follow in following:
-                self.repository_people.create_relationships(follow, followers=[person])
 
     def create_simulate_people(self, n_bots: int, n_persons: int, n_influencers: int, mean_posts_bots: int,
                                max_posts_influencers: int, mean_posts_persons: int):
@@ -62,10 +56,6 @@ class ServicePeople:
         for person_to_bots in persons_follow_bots:
             bots_followed = random.sample(bots, n_bots_followed)
             self.create_relationships(person_to_bots, followers=bots_followed)
-        influencers = self.repository_people.get_persons_by_type(user_type=TypePerson.INFLUENCER.value)
-        for influencer in influencers:
-            influencer.user_type = TypePerson.PERSON.value
-            self.repository_people.update_person(person=influencer)
 
     def create_relationships_bot(self, range_bots_following_persons: tuple[int, int], n_bots_following_bots: int):
         bots = self.repository_people.get_persons_by_type(user_type=TypePerson.BOT.value)

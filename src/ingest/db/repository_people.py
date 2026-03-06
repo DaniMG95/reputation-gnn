@@ -14,19 +14,27 @@ class RepositoryPeople:
                n_following=person.n_following).save()
 
     @staticmethod
-    def create_relationships(person: PersonSchema, followers: list[PersonSchema] = None,
+    def _update_follows(person: PersonSchema):
+        person_db = Person.nodes.get(name=person.name)
+        person_db.n_following = len(person_db.following)
+        person_db.n_followers = len(person_db.followers)
+        person_db.save()
+
+    def create_relationships(self, person: PersonSchema, followers: list[PersonSchema] = None,
                              following: list[PersonSchema] = None):
         person_db = Person.nodes.get(name=person.name)
         if followers:
             for follower in followers:
                 follower_db = Person.nodes.get(name=follower.name)
                 person_db.followers.connect(follower_db)
-            person_db.n_followers = len(person_db.followers)
+                self._update_follows(person=follower_db)
         if following:
             for follow in following:
                 follow_db = Person.nodes.get(name=follow.name)
                 person_db.following.connect(follow_db)
-            person_db.n_following = len(person_db.following)
+                self._update_follows(person=follow_db)
+        person_db.n_following = len(person_db.following)
+        person_db.n_followers = len(person_db.followers)
         person_db.save()
 
     @staticmethod

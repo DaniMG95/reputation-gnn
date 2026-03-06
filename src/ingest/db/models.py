@@ -1,5 +1,5 @@
 from neomodel import (StructuredNode, StringProperty, IntegerProperty,
-    UniqueIdProperty, RelationshipTo)
+                      UniqueIdProperty, RelationshipTo, RelationshipFrom)
 
 class Person(StructuredNode):
     uid = UniqueIdProperty()
@@ -8,7 +8,7 @@ class Person(StructuredNode):
     posts = IntegerProperty()
     n_followers = IntegerProperty()
     n_following = IntegerProperty()
-    followers = RelationshipTo('Person', 'FOLLOWED_BY')
+    followers = RelationshipFrom('Person', 'FOLLOWS')
     following = RelationshipTo('Person', 'FOLLOWS')
 
 
