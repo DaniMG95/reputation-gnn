@@ -1,15 +1,16 @@
-from neomodel import db
-from ingest.db.models import Person
-from ingest.schemas.person import PersonSchema
+from common.db.models import Person
+from common.schemas.person import PersonSchema
+from common.db.interfaces import RepositoryPeopleInterface
 
-class RepositoryPeople:
+class RepositoryPeopleNeo4j(RepositoryPeopleInterface):
 
-    @staticmethod
-    def delete_all():
-        db.cypher_query('MATCH (n:Person) DETACH DELETE n')
+    def __init__(self, db):
+        self.db = db
 
-    @staticmethod
-    def create_person(person: PersonSchema):
+    def delete_all(self):
+        self.db.cypher_query('MATCH (n:Person) DETACH DELETE n')
+
+    def create_person(self, person: PersonSchema):
         Person(name=person.name, user_type=person.user_type, posts=person.posts, n_followers=person.n_followers,
                n_following=person.n_following).save()
 
@@ -50,28 +51,27 @@ class RepositoryPeople:
         return person
 
 
-    @classmethod
-    def get_person(cls, name: str) -> PersonSchema:
+    def get_person(self, name: str) -> PersonSchema:
         person_db = Person.nodes.get(name=name)
-        return cls._transform_to_schema(person_db)
+        return self._transform_to_schema(person_db)
 
-    @classmethod
-    def get_persons_by_type(cls, user_type: str) -> list[PersonSchema]:
+    def get_persons_by_type(self, user_type: str) -> list[PersonSchema]:
         persons_db = Person.nodes.filter(user_type=user_type)
-        return [cls._transform_to_schema(person_db)
+        return [self._transform_to_schema(person_db)
                 for person_db in persons_db]
 
-    @classmethod
-    def get_all_persons(cls) -> list[PersonSchema]:
+    def get_all_persons(self) -> list[PersonSchema]:
         persons_db = Person.nodes.all()
-        return [cls._transform_to_schema(person_db)
+        return [self._transform_to_schema(person_db)
                 for person_db in persons_db]
 
-    @classmethod
-    def update_person(cls, person: PersonSchema):
+    def update_person(self, person: PersonSchema):
         person_db = Person.nodes.get(name=person.name)
         person_db.posts = person.posts
         person_db.n_followers = person.n_followers
         person_db.n_following = person.n_following
         person_db.user_type = person.user_type
         person_db.save()
+
+    def get_persons_by_names(self, names: list[str]) -> list[PersonSchema]:
+        return [self.get_person(name) for name in names]

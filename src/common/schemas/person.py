@@ -1,9 +1,16 @@
 from dataclasses import dataclass, field
+from enum import Enum
+
+class TypePerson(Enum, str):
+    BOT = 'bot'
+    PERSON = 'person'
+    INFLUENCER = 'influencer'
+
 
 @dataclass
 class PersonSchema:
     name: str
-    user_type: str
+    user_type: TypePerson
     posts: int
     n_followers: int
     n_following: int

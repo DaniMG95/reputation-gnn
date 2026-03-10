@@ -1,8 +1,9 @@
 from ingest.simulator.simulator_ingest import SimulatorIngest
-from ingest.db.repository_people import RepositoryPeople
+from common.db.repository_people_neo4j import RepositoryPeopleNeo4j
+from neomodel import db
 from ingest.simulator.service_people import ServicePeople
-from ingest.db.connection import init_db_connection
-from ingest.logger import LoggerIngest
+from common.db.connection import init_db_connection
+from common.logger import LoggerIngest
 import argparse
 
 def main():
@@ -17,7 +18,7 @@ def main():
     args = parser.parse_args()
     init_db_connection()
 
-    repository_people=RepositoryPeople()
+    repository_people=RepositoryPeopleNeo4j(db=db)
     service_people = ServicePeople(repository_people=repository_people)
 
 

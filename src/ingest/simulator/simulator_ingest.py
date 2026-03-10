@@ -1,5 +1,5 @@
 from ingest.simulator.service_people import ServicePeople
-from ingest.logger import LoggerIngest
+from common.logger import LoggerIngest
 
 class SimulatorIngest:
 

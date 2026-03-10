@@ -1,13 +1,7 @@
 from faker import Faker
 import random
-from enum import Enum
-from ingest.schemas.person import PersonSchema
+from common.schemas.person import PersonSchema, TypePerson
 from abc import ABC, abstractmethod
-
-class TypePerson(Enum):
-    BOT = 'bot'
-    PERSON = 'person'
-    INFLUENCER = 'influencer'
 
 
 class GeneratorNameInterface(ABC):
@@ -85,6 +79,6 @@ class GeneratorPeople:
         posts = random.randint(self.range_posts[0], self.range_posts[1])
         self.index += 1
         return PersonSchema(name=name, posts=posts, n_followers=self.n_followers, n_following=self.n_following,
-                      user_type=self.type_person.value)
+                            user_type=self.type_person.value)
 
 

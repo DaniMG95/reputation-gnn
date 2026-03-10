@@ -1,12 +1,12 @@
-from ingest.db.repository_people import RepositoryPeople
-from ingest.schemas.person import PersonSchema
-from ingest.simulator.generator_person import TypePerson, GeneratorPeople, GeneratorNameFactory
+from common.db.interfaces import RepositoryPeopleInterface
+from common.schemas.person import PersonSchema, TypePerson
+from ingest.simulator.generator_person import GeneratorPeople, GeneratorNameFactory
 import random
-from ingest.logger import LoggerIngest
+from common.logger import LoggerIngest
 
 
 class ServicePeople:
-    def __init__(self, repository_people: RepositoryPeople):
+    def __init__(self, repository_people: RepositoryPeopleInterface):
         self.repository_people = repository_people
         self.logger = LoggerIngest(name="service_people")
 
