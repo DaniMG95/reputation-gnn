@@ -22,21 +22,33 @@ class ModelTrainer:
         for epoch in range(self.epochs):
             self.optimizer.zero_grad()
 
-            out = self.model(self.data)
+            prediction = self.model(self.data)
 
-            loss = F.nll_loss(out, self.data.y)
+            if hasattr(self.data, 'train_mask'):
+                out = prediction[self.data.train_mask]
+                target = self.data.y[self.data.train_mask]
+            else:
+                target = self.data.y
+                out = prediction
+            loss = F.nll_loss(out, target)
 
             loss.backward()
             self.optimizer.step()
 
             if epoch % 20 == 0:
-                acc = self.calculate_accuracy(out)
+                if hasattr(self.data, 'validation_mask'):
+                    out = prediction[self.data.validation_mask]
+                    target = self.data.y[self.data.validation_mask]
+                else:
+                    target = self.data.y
+                    out = prediction
+                acc = self.calculate_accuracy(out, target)
                 pbar.update(1)
                 pbar.set_postfix({'loss': f'{loss:.4f}', 'acc': f'{acc:.4f}'})
 
-    def calculate_accuracy(self, out):
+    def calculate_accuracy(self, out, labels):
         pred = out.argmax(dim=1)
-        correct = (pred == self.data.y).sum()
+        correct = (pred == labels).sum()
         return int(correct) / int(self.data.num_nodes)
 
     def save_model(self, path: str):

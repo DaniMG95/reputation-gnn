@@ -14,7 +14,7 @@ class GraphDataLoader:
     def _create_node_mapping(persons: list[PersonSchema]) -> dict[str, int]:
         return {person.name: i for i, person in enumerate(persons)}
 
-    def _create_graph_by_persons(self, persons: list[PersonSchema]) -> Data:
+    def _create_graph_by_persons(self, persons: list[PersonSchema], validation: bool) -> Data:
         node_mapping = self._create_node_mapping(persons=persons)
 
         attributes_list = []
@@ -31,18 +31,34 @@ class GraphDataLoader:
                     edge_targets.append(node_mapping[follow.name])
 
         x = torch.tensor(attributes_list, dtype=torch.float)
+        x = (x - x.mean(dim=0)) / (x.std(dim=0) + 1e-6)
         y = torch.tensor(type_person_list, dtype=torch.long)
         edge_index = torch.tensor([edge_sources, edge_targets], dtype=torch.long)
 
-        return Data(x=x, edge_index=edge_index, y=y)
+        num_nodes = x.size(0)
+        indices = torch.randperm(num_nodes)
+
+        data = Data(x=x, edge_index=edge_index, y=y)
+
+        if validation:
+            train_mask = torch.zeros(num_nodes, dtype=torch.bool)
+            validation_mask = torch.zeros(num_nodes, dtype=torch.bool)
+
+            train_mask[indices[:int(num_nodes * 0.8)]] = True
+            validation_mask[indices[int(num_nodes * 0.8):]] = True
+
+            data.train_mask = train_mask
+            data.validation_mask = validation_mask
+
+        return data
 
     def create_graph(self) -> Data:
         persons = self.repository_people.get_all_persons()
-        return self._create_graph_by_persons(persons=persons)
+        return self._create_graph_by_persons(persons=persons, validation=True)
 
     def create_subgraph_by_persons(self, names: list[str], hops: int = 1, predict_mask: bool = True) -> Data:
         persons = self.repository_people.get_neighborhoods(names=names, hops=hops)
-        data = self._create_graph_by_persons(persons=persons)
+        data = self._create_graph_by_persons(persons=persons, validation=False)
         if predict_mask:
             data.predict_mask = torch.tensor([person.name in names for person in persons])
         return data
