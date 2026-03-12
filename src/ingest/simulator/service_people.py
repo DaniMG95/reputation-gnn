@@ -33,7 +33,7 @@ class ServicePeople:
                                                 range_posts=(mean_posts_persons, max_posts_influencers),
                                                 n_followers=0, n_following=0, generator_names=generator_names_person)
         generator_persons = GeneratorPeople(type_person=TypePerson.PERSON, n_people=n_persons_not_influencers,
-                                            range_posts=(0, mean_posts_persons), n_followers=0, n_following=0,
+                                            range_posts=(50, mean_posts_persons), n_followers=0, n_following=0,
                                             generator_names=generator_names_person)
         for generator in tqdm([generator_persons, generator_influencers], desc="Generating users"):
             for person in generator:

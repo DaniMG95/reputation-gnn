@@ -8,7 +8,7 @@ from brain.model_predictor import ModelPredictor
 from brain.models.bot_detector_gcn import BotDetectorGCN
 from common.logger import LoggerIngest
 
-def train_model():
+def train():
     LoggerIngest.setup_logging()
     logger = LoggerIngest(name="brain.main")
     init_db_connection()
@@ -62,5 +62,5 @@ def predict():
 
 
 if __name__ == "__main__":
-    train_model()
+    train()
     predict()

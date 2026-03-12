@@ -11,7 +11,7 @@ def main():
     logger_ingest = LoggerIngest(name="main")
 
     parser = argparse.ArgumentParser(description='Ingest data into the graph database.')
-    parser.add_argument('--n_accounts', type=int, default=10, help='Number of accounts to create')
+    parser.add_argument('--n_accounts', type=int, default=100, help='Number of accounts to create')
     parser.add_argument('--p_bots', type=float, default=0.3, help='Percentage of bot accounts')
     parser.add_argument('--p_influencers', type=float, default=0.2,
                         help='Percentage of influencer accounts')
