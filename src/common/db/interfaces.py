@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from common.schemas.person import PersonSchema
+from common.schemas.person import PersonSchema, TypePerson
 
 
 class RepositoryPeopleInterface(ABC):
@@ -22,7 +22,7 @@ class RepositoryPeopleInterface(ABC):
         pass
 
     @abstractmethod
-    def get_persons_by_type(self, user_type: str) -> list[PersonSchema]:
+    def get_persons_by_type(self, user_type: TypePerson) -> list[PersonSchema]:
         pass
 
     @abstractmethod
@@ -35,4 +35,10 @@ class RepositoryPeopleInterface(ABC):
 
     @abstractmethod
     def get_persons_by_names(self, names: list[str]) -> list[PersonSchema]:
+        pass
+
+    def get_neighborhoods(self, names: list[str], hops: int = 1) -> list[PersonSchema]:
+        pass
+
+    def get_random_nodes(self, n: int) -> list[PersonSchema]:
         pass

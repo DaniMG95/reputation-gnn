@@ -9,12 +9,20 @@ class ModelPredictor:
         self.model.load_state_dict(torch.load(model_path))
         self.model.eval()
 
-    def predict(self, new_data: Data) -> tuple[TypePerson, float]:
+    def predict(self, new_data: Data) -> list[tuple[TypePerson, float]]:
         with torch.no_grad():
             logits = self.model(new_data)
             probs = torch.exp(logits)
-            prediction = logits.argmax(dim=1)
-            if prediction.item() == 0:
-                return TypePerson.BOT, probs[0][0].item()
-            else:
-                return TypePerson.PERSON, probs[0][1].item()
+            target_logits = logits[new_data.predict_mask]
+            target_probs = probs[new_data.predict_mask]
+
+            predictions = target_logits.argmax(dim=1)
+
+            results = []
+            for i in range(len(predictions)):
+                pred_idx = predictions[i].item()
+                confidence = target_probs[i][pred_idx].item()
+                label = TypePerson.BOT if pred_idx == 0 else TypePerson.PERSON
+                results.append((label, confidence))
+
+            return results

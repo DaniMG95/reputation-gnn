@@ -3,6 +3,7 @@ from common.schemas.person import PersonSchema, TypePerson
 from ingest.simulator.generator_person import GeneratorPeople, GeneratorNameFactory
 import random
 from common.logger import LoggerIngest
+from tqdm import tqdm
 
 
 class ServicePeople:
@@ -22,7 +23,7 @@ class ServicePeople:
         generator_bot = GeneratorPeople(type_person=TypePerson.BOT, n_people=n_bots,
                                         range_posts=(0, mean_posts_bots), n_followers=0, n_following=0,
                                         generator_names=generator_names_bot)
-        for bot in generator_bot:
+        for bot in tqdm(generator_bot, desc="Generating bots"):
             self.repository_people.create_person(person=bot)
 
         generator_names_person = GeneratorNameFactory.get_generator(type_person=TypePerson.PERSON,
@@ -34,34 +35,41 @@ class ServicePeople:
         generator_persons = GeneratorPeople(type_person=TypePerson.PERSON, n_people=n_persons_not_influencers,
                                             range_posts=(0, mean_posts_persons), n_followers=0, n_following=0,
                                             generator_names=generator_names_person)
-        for generator in [generator_persons, generator_influencers]:
+        for generator in tqdm([generator_persons, generator_influencers], desc="Generating users"):
             for person in generator:
                 self.repository_people.create_person(person=person)
 
     def create_relationships_real_persons(self, followers: int, range_followers_influencers: tuple[int, int],
                                           n_persons_follow_bot: int, n_bots_followed: int):
-        real_persons = self.repository_people.get_persons_by_type(user_type=TypePerson.PERSON.value)
-        real_persons += self.repository_people.get_persons_by_type(user_type=TypePerson.INFLUENCER.value)
-        for real_person in real_persons:
-            persons = real_persons[:]
-            persons.remove(real_person)
-            if real_person.user_type == TypePerson.INFLUENCER.value:
-                n_followers = random.randint(range_followers_influencers[0], range_followers_influencers[1])
-            else:
-                n_followers = random.randint(0, followers)
-            followers_selected = random.sample(persons, n_followers)
-            self.create_relationships(person=real_person, followers=followers_selected)
-        bots = self.repository_people.get_persons_by_type(user_type=TypePerson.BOT.value)
+        real_persons = self.repository_people.get_persons_by_type(user_type=TypePerson.PERSON)
+        real_persons += self.repository_people.get_persons_by_type(user_type=TypePerson.INFLUENCER)
         persons_follow_bots = random.sample(real_persons, n_persons_follow_bot)
-        for person_to_bots in persons_follow_bots:
-            bots_followed = random.sample(bots, n_bots_followed)
-            self.create_relationships(person_to_bots, followers=bots_followed)
+        bots = self.repository_people.get_persons_by_type(user_type=TypePerson.BOT)
+
+        total_steps = len(real_persons) + n_persons_follow_bot
+
+        with tqdm(total=total_steps, desc="Creating relationships for real persons") as pbar:
+            for real_person in real_persons:
+                persons = real_persons[:]
+                persons.remove(real_person)
+                if real_person.user_type == TypePerson.INFLUENCER:
+                    n_followers = random.randint(range_followers_influencers[0], range_followers_influencers[1])
+                else:
+                    n_followers = random.randint(0, followers)
+                followers_selected = random.sample(persons, n_followers)
+                self.create_relationships(person=real_person, followers=followers_selected)
+                pbar.update(1)
+
+            for person_to_bots in persons_follow_bots:
+                bots_followed = random.sample(bots, n_bots_followed)
+                self.create_relationships(person_to_bots, followers=bots_followed)
+                pbar.update(1)
 
     def create_relationships_bot(self, range_bots_following_persons: tuple[int, int], n_bots_following_bots: int):
-        bots = self.repository_people.get_persons_by_type(user_type=TypePerson.BOT.value)
-        real_persons = self.repository_people.get_persons_by_type(user_type=TypePerson.PERSON.value)
-        real_persons += self.repository_people.get_persons_by_type(user_type=TypePerson.INFLUENCER.value)
-        for bot in bots:
+        bots = self.repository_people.get_persons_by_type(user_type=TypePerson.BOT)
+        real_persons = self.repository_people.get_persons_by_type(user_type=TypePerson.PERSON)
+        real_persons += self.repository_people.get_persons_by_type(user_type=TypePerson.INFLUENCER)
+        for bot in tqdm(bots, desc="Creating relationships for bots following persons and bots"):
             bots_selected = bots[:]
             bots_selected.remove(bot)
             real_persons_selected = real_persons[:]

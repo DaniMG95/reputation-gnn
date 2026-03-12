@@ -1,5 +1,5 @@
 from common.db.models import Person
-from common.schemas.person import PersonSchema
+from common.schemas.person import PersonSchema, TypePerson
 from common.db.interfaces import RepositoryPeopleInterface
 
 class RepositoryPeopleNeo4j(RepositoryPeopleInterface):
@@ -11,7 +11,7 @@ class RepositoryPeopleNeo4j(RepositoryPeopleInterface):
         self.db.cypher_query('MATCH (n:Person) DETACH DELETE n')
 
     def create_person(self, person: PersonSchema):
-        Person(name=person.name, user_type=person.user_type, posts=person.posts, n_followers=person.n_followers,
+        Person(name=person.name, user_type=person.user_type.value, posts=person.posts, n_followers=person.n_followers,
                n_following=person.n_following).save()
 
     @staticmethod
@@ -55,8 +55,8 @@ class RepositoryPeopleNeo4j(RepositoryPeopleInterface):
         person_db = Person.nodes.get(name=name)
         return self._transform_to_schema(person_db)
 
-    def get_persons_by_type(self, user_type: str) -> list[PersonSchema]:
-        persons_db = Person.nodes.filter(user_type=user_type)
+    def get_persons_by_type(self, user_type: TypePerson) -> list[PersonSchema]:
+        persons_db = Person.nodes.filter(user_type=user_type.value)
         return [self._transform_to_schema(person_db)
                 for person_db in persons_db]
 
@@ -70,8 +70,30 @@ class RepositoryPeopleNeo4j(RepositoryPeopleInterface):
         person_db.posts = person.posts
         person_db.n_followers = person.n_followers
         person_db.n_following = person.n_following
-        person_db.user_type = person.user_type
+        person_db.user_type = person.user_type.value
         person_db.save()
 
     def get_persons_by_names(self, names: list[str]) -> list[PersonSchema]:
         return [self.get_person(name) for name in names]
+
+    def get_neighborhoods(self, names: list[str], hops: int = 1) -> list[PersonSchema]:
+        query = f"""
+                MATCH (p:Person)
+                WHERE p.name IN $names_list
+                MATCH (p)-[:FOLLOWS*0..{hops}]-(neighbors)
+                RETURN DISTINCT neighbors
+                """
+        results, _ = self.db.cypher_query(query, {'names_list': names})
+        return [self._transform_to_schema(Person.inflate(row[0])) for row in results]
+
+    def get_random_nodes(self, n: int) -> list[PersonSchema]:
+        query = f"""
+        MATCH (p:Person)
+        RETURN p, rand() as r
+        ORDER BY r
+        LIMIT {n}
+        """
+        results, _ = self.db.cypher_query(query)
+        if results:
+            return [self._transform_to_schema(Person.inflate(row[0])) for row in results]
+        return []

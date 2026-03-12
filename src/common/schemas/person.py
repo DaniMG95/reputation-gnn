@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from enum import Enum
 
-class TypePerson(Enum, str):
+class TypePerson(str, Enum):
     BOT = 'bot'
     PERSON = 'person'
     INFLUENCER = 'influencer'

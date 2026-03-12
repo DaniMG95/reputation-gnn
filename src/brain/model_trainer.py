@@ -2,6 +2,7 @@ from brain.models.interfaces import ModelBotDetectorInterface
 from torch_geometric.data import Data
 import torch.nn.functional as F
 import torch
+from tqdm import tqdm
 
 
 class ModelTrainer:
@@ -16,6 +17,7 @@ class ModelTrainer:
 
     def train(self):
         self.model.train()
+        pbar = tqdm(range(self.epochs), desc="Training Model")
 
         for epoch in range(self.epochs):
             self.optimizer.zero_grad()
@@ -29,7 +31,8 @@ class ModelTrainer:
 
             if epoch % 20 == 0:
                 acc = self.calculate_accuracy(out)
-                print(f'Epoch {epoch:03d} | Loss: {loss:.4f} | Acc: {acc:.4f}')
+                pbar.update(1)
+                pbar.set_postfix({'loss': f'{loss:.4f}', 'acc': f'{acc:.4f}'})
 
     def calculate_accuracy(self, out):
         pred = out.argmax(dim=1)

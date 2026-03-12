@@ -79,6 +79,6 @@ class GeneratorPeople:
         posts = random.randint(self.range_posts[0], self.range_posts[1])
         self.index += 1
         return PersonSchema(name=name, posts=posts, n_followers=self.n_followers, n_following=self.n_following,
-                            user_type=self.type_person.value)
+                            user_type=self.type_person)
 
 
