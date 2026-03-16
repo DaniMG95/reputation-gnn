@@ -17,3 +17,13 @@ class PersonSchema:
     verified: bool
     followers: list["PersonSchema"] = field(default_factory=list)
     following: list["PersonSchema"] = field(default_factory=list)
+
+    @property
+    def attributes(self) -> list[float]:
+        return [self.n_followers, self.n_following, self.posts, self.verified]
+
+@dataclass
+class PersonPredict:
+    name: str
+    user_type: TypePerson
+    confidence: float

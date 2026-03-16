@@ -1,6 +1,6 @@
 import torch
 from brain.models.interfaces import ModelBotDetectorInterface
-from common.schemas.person import TypePerson
+from common.schemas.person import TypePerson, PersonPredict
 from torch_geometric.data import Data
 
 class ModelPredictor:
@@ -9,20 +9,24 @@ class ModelPredictor:
         self.model.load_state_dict(torch.load(model_path))
         self.model.eval()
 
-    def predict(self, new_data: Data) -> list[tuple[TypePerson, float]]:
+    def predict(self, new_data: Data, names: list[str]) -> list[PersonPredict]:
         with torch.no_grad():
             logits = self.model(new_data)
             probs = torch.exp(logits)
-            target_logits = logits[new_data.predict_mask]
-            target_probs = probs[new_data.predict_mask]
+            if hasattr(new_data, 'predict_mask'):
+                logits = logits[new_data.predict_mask]
+                probs = probs[new_data.predict_mask]
 
-            predictions = target_logits.argmax(dim=1)
+            predictions = logits.argmax(dim=1)
 
+            if len(predictions) != len(names):
+                raise ValueError(f"Number of predictions ({len(predictions)}) does not match number of "
+                                 f"names ({len(names)})")
             results = []
             for i in range(len(predictions)):
                 pred_idx = predictions[i].item()
-                confidence = target_probs[i][pred_idx].item()
+                confidence = probs[i][pred_idx].item()
                 label = TypePerson.BOT if pred_idx == 0 else TypePerson.PERSON
-                results.append((label, confidence))
+                results.append(PersonPredict(name=names[i], user_type=label, confidence=confidence))
 
             return results
