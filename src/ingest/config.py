@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     percentage_bots_following_persons: float = 0.80
     deviation_bots_following_persons: float = 0.10
     percentage_bots_follow_bots: float = 0.9
+    percentage_verified_person: float = 0.3
 
     class Config:
         env_file = ".env"

@@ -14,5 +14,6 @@ class PersonSchema:
     posts: int
     n_followers: int
     n_following: int
+    verified: bool
     followers: list["PersonSchema"] = field(default_factory=list)
     following: list["PersonSchema"] = field(default_factory=list)

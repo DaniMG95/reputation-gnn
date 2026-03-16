@@ -1,4 +1,4 @@
-from neomodel import (StructuredNode, StringProperty, IntegerProperty,
+from neomodel import (StructuredNode, StringProperty, IntegerProperty, BooleanProperty,
                       UniqueIdProperty, RelationshipTo, RelationshipFrom)
 
 class Person(StructuredNode):
@@ -8,6 +8,7 @@ class Person(StructuredNode):
     posts = IntegerProperty()
     n_followers = IntegerProperty()
     n_following = IntegerProperty()
+    verified = BooleanProperty()
     followers = RelationshipFrom('Person', 'FOLLOWS')
     following = RelationshipTo('Person', 'FOLLOWS')
 

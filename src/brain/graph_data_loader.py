@@ -14,6 +14,10 @@ class GraphDataLoader:
     def _create_node_mapping(persons: list[PersonSchema]) -> dict[str, int]:
         return {person.name: i for i, person in enumerate(persons)}
 
+    @staticmethod
+    def _get_attributes_by_person(person: PersonSchema) -> list[float]:
+        return [person.n_followers, person.n_following, person.posts, person.verified]
+
     def _create_graph_by_persons(self, persons: list[PersonSchema], validation: bool) -> Data:
         node_mapping = self._create_node_mapping(persons=persons)
 
@@ -23,15 +27,17 @@ class GraphDataLoader:
         edge_targets = []
         for person in persons:
             source_idx = node_mapping[person.name]
-            attributes_list.append([person.n_followers, person.n_following, person.posts])
-            type_person_list.append(1 if person.user_type == TypePerson.BOT else 0)
+            attributes_list.append(self._get_attributes_by_person(person=person))
+            type_person_list.append(0 if person.user_type == TypePerson.BOT else 1)
             for follow in person.following:
                 if follow.name in node_mapping:
                     edge_sources.append(source_idx)
                     edge_targets.append(node_mapping[follow.name])
 
         x = torch.tensor(attributes_list, dtype=torch.float)
-        x = (x - x.mean(dim=0)) / (x.std(dim=0) + 1e-6)
+        x_min = x.min(dim=0, keepdim=True)[0]
+        x_max = x.max(dim=0, keepdim=True)[0]
+        x = (x - x_min) / (x_max - x_min + 1e-6)
         y = torch.tensor(type_person_list, dtype=torch.long)
         edge_index = torch.tensor([edge_sources, edge_targets], dtype=torch.long)
 
@@ -56,10 +62,10 @@ class GraphDataLoader:
         persons = self.repository_people.get_all_persons()
         return self._create_graph_by_persons(persons=persons, validation=True)
 
-    def create_subgraph_by_persons(self, names: list[str], hops: int = 1, predict_mask: bool = True) -> Data:
+    def create_subgraph_by_persons(self, names: list[str], hops: int = 1, predict: bool = True) -> Data:
         persons = self.repository_people.get_neighborhoods(names=names, hops=hops)
         data = self._create_graph_by_persons(persons=persons, validation=False)
-        if predict_mask:
+        if predict:
             data.predict_mask = torch.tensor([person.name in names for person in persons])
         return data
 

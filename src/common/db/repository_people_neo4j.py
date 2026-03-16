@@ -12,7 +12,7 @@ class RepositoryPeopleNeo4j(RepositoryPeopleInterface):
 
     def create_person(self, person: PersonSchema):
         Person(name=person.name, user_type=person.user_type.value, posts=person.posts, n_followers=person.n_followers,
-               n_following=person.n_following).save()
+               n_following=person.n_following, verified=person.verified).save()
 
     @staticmethod
     def _update_follows(person: PersonSchema):
@@ -41,12 +41,15 @@ class RepositoryPeopleNeo4j(RepositoryPeopleInterface):
     @staticmethod
     def _transform_to_schema(person_db: Person) -> PersonSchema:
         person = PersonSchema(name=person_db.name, user_type=person_db.user_type, posts=person_db.posts,
-                        n_followers=person_db.n_followers, n_following=person_db.n_following)
+                              n_followers=person_db.n_followers, n_following=person_db.n_following,
+                              verified=person_db.verified)
         person.followers = [PersonSchema(name=follower.name, user_type=follower.user_type, posts=follower.posts,
-                                   n_followers=follower.n_followers, n_following=follower.n_following)
+                                         n_followers=follower.n_followers, n_following=follower.n_following,
+                                         verified=follower.verified)
                             for follower in person_db.followers]
         person.following = [PersonSchema(name=follow.name, user_type=follow.user_type, posts=follow.posts,
-                                   n_followers=follow.n_followers, n_following=follow.n_following)
+                                         n_followers=follow.n_followers, n_following=follow.n_following,
+                                         verified=follow.verified)
                             for follow in person_db.following]
         return person
 
@@ -71,6 +74,7 @@ class RepositoryPeopleNeo4j(RepositoryPeopleInterface):
         person_db.n_followers = person.n_followers
         person_db.n_following = person.n_following
         person_db.user_type = person.user_type.value
+        person_db.verified = person.verified
         person_db.save()
 
     def get_persons_by_names(self, names: list[str]) -> list[PersonSchema]:

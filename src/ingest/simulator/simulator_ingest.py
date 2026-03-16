@@ -40,13 +40,12 @@ class SimulatorIngest:
                          "Number of persons: %d \n"
                          "Number followers per person: %d \n"
                          "Range followers per influencer: %d - %d \n"
-                         "Number of bots followed by a person: %d \n"
-                         "Number of persons following a bot: %d \n"
+                         "There are %d persons that follow %d bots\n"
                          "Range of persons followed a bot: %d - %d \n"
                          "Number of bots following bots: %d \n",
                          self.n_accounts, n_bots, n_influencers, self.n_accounts - (n_bots + n_influencers),
                          followers_person, range_followers_influencers[0], range_followers_influencers[1],
-                         n_bots_followed, n_persons_follow_bot, range_bots_following_persons[0],
+                         n_persons_follow_bot, n_bots_followed, range_bots_following_persons[0],
                          range_bots_following_persons[1], n_bots_following_bots)
         self.logger.info("Creating simulated people")
         self.service_people.create_simulate_people(n_bots=n_bots, n_influencers=n_influencers,

@@ -15,7 +15,7 @@ dependencies = [
 [project.scripts]
 ingest-data = "ingest.main:main"
 train-model = "brain.main:train"
-predict-model = "brain.main:predict"
+predict-model = "brain.main:predict_eval"
 
 [tool.uv]
 package = true

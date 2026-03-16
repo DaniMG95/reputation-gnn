@@ -1,6 +1,7 @@
 from common.db.interfaces import RepositoryPeopleInterface
 from common.schemas.person import PersonSchema, TypePerson
-from ingest.simulator.generator_person import GeneratorPeople, GeneratorNameFactory
+from ingest.simulator.generator_person import GeneratorPeople
+from ingest.simulator.generator import GeneratorFactory
 import random
 from common.logger import LoggerIngest
 from tqdm import tqdm
@@ -19,25 +20,35 @@ class ServicePeople:
                                max_posts_influencers: int, mean_posts_persons: int):
         n_persons = n_persons - n_bots
         n_persons_not_influencers = n_persons - n_influencers
-        generator_names_bot = GeneratorNameFactory.get_generator(type_person=TypePerson.BOT)
+        names_used = []
+        generator_type_bot = GeneratorFactory.get_generator(type_person=TypePerson.BOT)
         generator_bot = GeneratorPeople(type_person=TypePerson.BOT, n_people=n_bots,
                                         range_posts=(0, mean_posts_bots), n_followers=0, n_following=0,
-                                        generator_names=generator_names_bot)
+                                        generator=generator_type_bot)
         for bot in tqdm(generator_bot, desc="Generating bots"):
             self.repository_people.create_person(person=bot)
 
-        generator_names_person = GeneratorNameFactory.get_generator(type_person=TypePerson.PERSON,
-                                                                    prohibited_names=generator_names_bot.names)
+        names_used = generator_type_bot.names[:]
+
+        generator_type_influencer = GeneratorFactory.get_generator(type_person=TypePerson.INFLUENCER,
+                                                                  prohibited_names=names_used)
+
 
         generator_influencers = GeneratorPeople(type_person=TypePerson.INFLUENCER, n_people=n_influencers,
                                                 range_posts=(mean_posts_persons, max_posts_influencers),
-                                                n_followers=0, n_following=0, generator_names=generator_names_person)
+                                                n_followers=0, n_following=0, generator=generator_type_influencer)
+        for influencer in tqdm(generator_influencers, desc="Generating influencers"):
+            self.repository_people.create_person(person=influencer)
+
+        names_used += generator_type_influencer.names[:]
+        generator_type_person = GeneratorFactory.get_generator(type_person=TypePerson.PERSON,
+                                                              prohibited_names=names_used)
+
         generator_persons = GeneratorPeople(type_person=TypePerson.PERSON, n_people=n_persons_not_influencers,
                                             range_posts=(50, mean_posts_persons), n_followers=0, n_following=0,
-                                            generator_names=generator_names_person)
-        for generator in tqdm([generator_persons, generator_influencers], desc="Generating users"):
-            for person in generator:
-                self.repository_people.create_person(person=person)
+                                            generator=generator_type_person)
+        for person in tqdm(generator_persons, desc="Generating persons"):
+            self.repository_people.create_person(person=person)
 
     def create_relationships_real_persons(self, followers: int, range_followers_influencers: tuple[int, int],
                                           n_persons_follow_bot: int, n_bots_followed: int):

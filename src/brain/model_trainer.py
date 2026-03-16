@@ -30,7 +30,9 @@ class ModelTrainer:
             else:
                 target = self.data.y
                 out = prediction
-            loss = F.nll_loss(out, target)
+
+            weights = torch.tensor([1.0, 2.5])
+            loss = F.nll_loss(out, target, weight=weights)
 
             loss.backward()
             self.optimizer.step()
