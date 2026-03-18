@@ -12,8 +12,8 @@ class ServicePeople:
         self.repository_people = repository_people
         self.logger = LoggerIngest(name="service_people")
 
-    def create_relationships(self, person: PersonSchema, followers: list[PersonSchema] = None,
-                             following: list[PersonSchema] = None):
+    def create_relationships(self, person: PersonSchema, followers: list[str] = None,
+                             following: list[str] = None):
         self.repository_people.create_relationships(person=person, followers=followers, following=following)
 
     def create_simulate_people(self, n_bots: int, n_persons: int, n_influencers: int, mean_posts_bots: int,
@@ -68,12 +68,12 @@ class ServicePeople:
                 else:
                     n_followers = random.randint(0, followers)
                 followers_selected = random.sample(persons, n_followers)
-                self.create_relationships(person=real_person, followers=followers_selected)
+                self.create_relationships(person=real_person, followers=[follower.name for follower in followers_selected])
                 pbar.update(1)
 
             for person_to_bots in persons_follow_bots:
                 bots_followed = random.sample(bots, n_bots_followed)
-                self.create_relationships(person_to_bots, followers=bots_followed)
+                self.create_relationships(person_to_bots, followers=[follower.name for follower in bots_followed])
                 pbar.update(1)
 
     def create_relationships_bot(self, range_bots_following_persons: tuple[int, int], n_bots_following_bots: int):
@@ -87,7 +87,7 @@ class ServicePeople:
             bots_selected = random.sample(bots_selected, n_bots_following_bots)
             real_persons_selected = random.sample(real_persons_selected, random.randint(range_bots_following_persons[0],
                                                                                         range_bots_following_persons[1]))
-            self.create_relationships(person=bot, following=bots_selected + real_persons_selected)
+            self.create_relationships(person=bot, following=[following.name for following in bots_selected + real_persons_selected])
 
 
     def clean_persons(self):

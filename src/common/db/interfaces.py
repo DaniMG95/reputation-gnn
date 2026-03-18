@@ -13,8 +13,8 @@ class RepositoryPeopleInterface(ABC):
         pass
 
     @abstractmethod
-    def create_relationships(self, person: PersonSchema, followers: list[PersonSchema] = None,
-                             following: list[PersonSchema] = None):
+    def create_relationships(self, person: PersonSchema, followers: list[str] = None,
+                             following: list[str] = None):
         pass
 
     @abstractmethod
@@ -31,6 +31,10 @@ class RepositoryPeopleInterface(ABC):
 
     @abstractmethod
     def update_person(self, person: PersonSchema):
+        pass
+
+    @abstractmethod
+    def delete_person(self, name: str):
         pass
 
     @abstractmethod

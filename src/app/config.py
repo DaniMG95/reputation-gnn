@@ -1,0 +1,16 @@
+from pydantic_settings import BaseSettings
+
+class Settings(BaseSettings):
+    model_name: str = "bot_detector_gcn"
+    model_path: str = "bot_detector_gcn.pth"
+    hidden_channels: int  = 32
+    host_redis: str = "localhost"
+    port_redis: int = 6379
+    db_redis: int = 0
+
+    class Config:
+        env_file = ".env"
+        env_file_encoding = "utf-8"
+        case_sensitive = False
+
+settings = Settings()

@@ -1,11 +1,13 @@
 from common.db.models import Person
 from common.schemas.person import PersonSchema, TypePerson
 from common.db.interfaces import RepositoryPeopleInterface
+from common.logger import LoggerIngest
 
 class RepositoryPeopleNeo4j(RepositoryPeopleInterface):
 
     def __init__(self, db):
         self.db = db
+        self.logger = LoggerIngest(name="common.RepositoryPeopleNeo4j")
 
     def delete_all(self):
         self.db.cypher_query('MATCH (n:Person) DETACH DELETE n')
@@ -21,19 +23,25 @@ class RepositoryPeopleNeo4j(RepositoryPeopleInterface):
         person_db.n_followers = len(person_db.followers)
         person_db.save()
 
-    def create_relationships(self, person: PersonSchema, followers: list[PersonSchema] = None,
-                             following: list[PersonSchema] = None):
+    def create_relationships(self, person: PersonSchema, followers: list[str] = None,
+                             following: list[str] = None):
         person_db = Person.nodes.get(name=person.name)
         if followers:
             for follower in followers:
-                follower_db = Person.nodes.get(name=follower.name)
-                person_db.followers.connect(follower_db)
-                self._update_follows(person=follower_db)
+                follower_db = Person.nodes.get(name=follower)
+                if follower_db:
+                    person_db.followers.connect(follower_db)
+                    self._update_follows(person=follower_db)
+                else:
+                    self.logger.warning("Follower with name '{follower.name}' not found in database. Skipping connection.")
         if following:
             for follow in following:
-                follow_db = Person.nodes.get(name=follow.name)
-                person_db.following.connect(follow_db)
-                self._update_follows(person=follow_db)
+                follow_db = Person.nodes.get(name=follow)
+                if follow_db:
+                    person_db.following.connect(follow_db)
+                    self._update_follows(person=follow_db)
+                else:
+                    self.logger.warning("Following with name '{follow.name}' not found in database. Skipping connection.")
         person_db.n_following = len(person_db.following)
         person_db.n_followers = len(person_db.followers)
         person_db.save()
@@ -101,3 +109,10 @@ class RepositoryPeopleNeo4j(RepositoryPeopleInterface):
         if results:
             return [self._transform_to_schema(Person.inflate(row[0])) for row in results]
         return []
+
+    def delete_person(self, name: str):
+        person_db = Person.nodes.get(name=name)
+        if person_db:
+            person_db.delete()
+        else:
+            raise ValueError(f"Person with name '{name}' not found in database.")

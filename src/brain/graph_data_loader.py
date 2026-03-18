@@ -1,6 +1,6 @@
 from common.db.interfaces import RepositoryPeopleInterface
 from torch_geometric.data import Data
-from common.GraphBuilder import GraphBuilder
+from common.graph_builder import GraphBuilder
 
 
 class GraphDataLoader:
