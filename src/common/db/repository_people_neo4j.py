@@ -48,22 +48,25 @@ class RepositoryPeopleNeo4j(RepositoryPeopleInterface):
 
     @staticmethod
     def _transform_to_schema(person_db: Person) -> PersonSchema:
-        person = PersonSchema(name=person_db.name, user_type=person_db.user_type, posts=person_db.posts,
+        person = PersonSchema(name=person_db.name, user_type=TypePerson(person_db.user_type), posts=person_db.posts,
                               n_followers=person_db.n_followers, n_following=person_db.n_following,
                               verified=person_db.verified)
-        person.followers = [PersonSchema(name=follower.name, user_type=follower.user_type, posts=follower.posts,
-                                         n_followers=follower.n_followers, n_following=follower.n_following,
-                                         verified=follower.verified)
+        person.followers = [PersonSchema(name=follower.name, user_type=TypePerson(follower.user_type),
+                                         posts=follower.posts, n_followers=follower.n_followers,
+                                         n_following=follower.n_following, verified=follower.verified)
                             for follower in person_db.followers]
-        person.following = [PersonSchema(name=follow.name, user_type=follow.user_type, posts=follow.posts,
+        person.following = [PersonSchema(name=follow.name, user_type=TypePerson(follow.user_type), posts=follow.posts,
                                          n_followers=follow.n_followers, n_following=follow.n_following,
                                          verified=follow.verified)
                             for follow in person_db.following]
         return person
 
 
-    def get_person(self, name: str) -> PersonSchema:
-        person_db = Person.nodes.get(name=name)
+    def get_person(self, name: str) -> PersonSchema | None:
+        try:
+            person_db = Person.nodes.get(name=name)
+        except Person.DoesNotExist:
+            return None
         return self._transform_to_schema(person_db)
 
     def get_persons_by_type(self, user_type: TypePerson) -> list[PersonSchema]:
@@ -86,7 +89,7 @@ class RepositoryPeopleNeo4j(RepositoryPeopleInterface):
         person_db.save()
 
     def get_persons_by_names(self, names: list[str]) -> list[PersonSchema]:
-        return [self.get_person(name) for name in names]
+        return [person for name in names if (person := self.get_person(name)) is not None]
 
     def get_neighborhoods(self, names: list[str], hops: int = 1) -> list[PersonSchema]:
         query = f"""
@@ -116,3 +119,15 @@ class RepositoryPeopleNeo4j(RepositoryPeopleInterface):
             person_db.delete()
         else:
             raise ValueError(f"Person with name '{name}' not found in database.")
+
+    def ping(self) -> bool:
+        try:
+            self.db.cypher_query("RETURN 1")
+            return True
+        except Exception as e:
+            self.logger.error(f"Error pinging Neo4j database: {e}")
+            return False
+
+    @property
+    def name(self) -> str:
+        return "Neo4j"

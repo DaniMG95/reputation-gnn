@@ -16,3 +16,13 @@ class CreatePersonRequest(BaseModel):
     verified: bool
     followers: list[str] = Field(default_factory=list)
     following: list[str] = Field(default_factory=list)
+
+class PersonResponse(BaseModel):
+    name: str
+    user_type: TypePerson
+    posts: int
+    n_followers: int
+    n_following: int
+    verified: bool
+    followers: list["PersonResponse"] = Field(default_factory=list)
+    following: list["PersonResponse"] = Field(default_factory=list)

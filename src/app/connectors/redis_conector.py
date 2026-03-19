@@ -17,3 +17,13 @@ class RedisConnector:
 
     def expire(self, key: str, time: int):
         self.redis_client.expire(key, time)
+
+    def close(self):
+        self.redis_client.close()
+
+    def ping(self) -> bool:
+        return self.redis_client.ping()
+
+    @property
+    def name(self) -> str:
+        return "Redis"

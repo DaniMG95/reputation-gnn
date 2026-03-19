@@ -4,6 +4,11 @@ from common.schemas.person import PersonSchema, TypePerson
 
 class RepositoryPeopleInterface(ABC):
 
+    @property
+    @abstractmethod
+    def name(self) -> str:
+        pass
+
     @abstractmethod
     def delete_all(self):
         pass
@@ -41,8 +46,14 @@ class RepositoryPeopleInterface(ABC):
     def get_persons_by_names(self, names: list[str]) -> list[PersonSchema]:
         pass
 
+    @abstractmethod
     def get_neighborhoods(self, names: list[str], hops: int = 1) -> list[PersonSchema]:
         pass
 
+    @abstractmethod
     def get_random_nodes(self, n: int) -> list[PersonSchema]:
+        pass
+
+    @abstractmethod
+    def ping(self) -> bool:
         pass
