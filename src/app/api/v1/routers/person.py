@@ -13,3 +13,16 @@ async def get_person(name: str, request: Request):
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     return person
+
+
+@api_router.delete("/{name}")
+async def delete_person(name: str, request: Request):
+    person_service: PersonService = request.app.state.person_service
+    try:
+        person_service.delete_person(person_name=name)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    return {"detail": f"Person '{name}' deleted successfully"}
+
+
+@
