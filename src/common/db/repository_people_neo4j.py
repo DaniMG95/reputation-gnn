@@ -74,6 +74,17 @@ class RepositoryPeopleNeo4j(RepositoryPeopleInterface):
         return [self._transform_to_schema(person_db)
                 for person_db in persons_db]
 
+    def get_persons_by_pagination(self, skip: int = 0, limit: int = 10) -> list[PersonSchema]:
+        query = f"""
+        MATCH (p:Person)
+        RETURN p
+        ORDER BY p.name ASC
+        SKIP {skip}
+        LIMIT {limit}
+        """
+        results, _ = self.db.cypher_query(query)
+        return [self._transform_to_schema(Person.inflate(row[0])) for row in results]
+
     def get_all_persons(self) -> list[PersonSchema]:
         persons_db = Person.nodes.all()
         return [self._transform_to_schema(person_db)
@@ -131,3 +142,8 @@ class RepositoryPeopleNeo4j(RepositoryPeopleInterface):
     @property
     def name(self) -> str:
         return "Neo4j"
+
+    def count_persons(self) -> int:
+        query = "MATCH (p:Person) RETURN count(p) AS count"
+        results, _ = self.db.cypher_query(query)
+        return results[0][0] if results else 0

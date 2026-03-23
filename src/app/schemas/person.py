@@ -26,3 +26,22 @@ class PersonResponse(BaseModel):
     verified: bool
     followers: list["PersonResponse"] = Field(default_factory=list)
     following: list["PersonResponse"] = Field(default_factory=list)
+
+    @classmethod
+    def from_person_schema(cls, person: PersonSchema) -> "PersonResponse":
+        return cls(
+            name=person.name,
+            user_type=person.user_type,
+            posts=person.posts,
+            n_followers=person.n_followers,
+            n_following=person.n_following,
+            verified=person.verified,
+            followers=[cls.from_person_schema(follower) for follower in person.followers],
+            following=[cls.from_person_schema(following) for following in person.following]
+        )
+
+class PaginationPersonResponse(BaseModel):
+    total: int
+    offset: int
+    limit: int
+    people: list[PersonResponse]

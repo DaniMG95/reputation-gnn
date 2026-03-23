@@ -57,3 +57,11 @@ class RepositoryPeopleInterface(ABC):
     @abstractmethod
     def ping(self) -> bool:
         pass
+
+    @abstractmethod
+    def get_persons_by_pagination(self, skip: int = 0, limit: int = 10) -> list[PersonSchema]:
+        pass
+
+    @abstractmethod
+    def count_persons(self) -> int:
+        pass

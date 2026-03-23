@@ -50,8 +50,15 @@ class PersonService(PersonServiceInterface):
         self.person_repository_cache.delete_person(person_name=person.name)
         return person
 
-    def list_people(self) -> list[PersonSchema]:
-        return self.person_repository_db.get_all_persons()
+    def list_people(self, offset: int = 0, limit: int = 20) -> list[PersonSchema]:
+        if offset < 0 or limit <= 0:
+            raise ValueError("Offset must be non-negative and limit must be positive.")
+        if limit > 100:
+            raise ValueError("Limit must not exceed 100.")
+        return self.person_repository_db.get_persons_by_pagination(skip=offset, limit=limit)
+
+    def count_people(self) -> int:
+        return self.person_repository_db.count_persons()
 
     @staticmethod
     def __generate_hash_person(person: PersonSchema) -> str:
