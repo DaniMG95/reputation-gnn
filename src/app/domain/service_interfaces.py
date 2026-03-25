@@ -19,7 +19,7 @@ class PersonServiceInterface(ABC):
         pass
 
     @abstractmethod
-    def list_people(self, offset: int = 0, limit: int = 20) -> list[PersonSchema]:
+    def list_people(self, offset: int = 0, limit: int = 20, type_person: TypePerson = None) -> list[PersonSchema]:
         pass
 
     @abstractmethod

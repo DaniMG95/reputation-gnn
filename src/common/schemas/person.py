@@ -8,19 +8,24 @@ class TypePerson(str, Enum):
 
 
 @dataclass
-class PersonSchema:
+class PersonBase:
     name: str
     user_type: TypePerson
     posts: int
     n_followers: int
     n_following: int
     verified: bool
-    followers: list["PersonSchema"] = field(default_factory=list)
-    following: list["PersonSchema"] = field(default_factory=list)
 
-    @property
     def attributes(self) -> list[float]:
         return [self.n_followers, self.n_following, self.posts, self.verified]
+
+
+
+@dataclass
+class PersonSchema(PersonBase):
+    followers: list["PersonBase"] = field(default_factory=list)
+    following: list["PersonBase"] = field(default_factory=list)
+
 
 @dataclass
 class PersonPredict:

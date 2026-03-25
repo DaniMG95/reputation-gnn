@@ -23,6 +23,11 @@ class RepositoryPeopleInterface(ABC):
         pass
 
     @abstractmethod
+    def update_relationships(self, person: PersonSchema, followers: list[str] = None,
+                             following: list[str] = None):
+        pass
+
+    @abstractmethod
     def get_person(self, name: str) -> PersonSchema:
         pass
 
@@ -31,7 +36,7 @@ class RepositoryPeopleInterface(ABC):
         pass
 
     @abstractmethod
-    def get_all_persons(self) -> list[PersonSchema]:
+    def get_all_persons(self, type_person: TypePerson) -> list[PersonSchema]:
         pass
 
     @abstractmethod
@@ -59,7 +64,8 @@ class RepositoryPeopleInterface(ABC):
         pass
 
     @abstractmethod
-    def get_persons_by_pagination(self, skip: int = 0, limit: int = 10) -> list[PersonSchema]:
+    def get_persons_by_pagination(self, skip: int = 0, limit: int = 10, type_person: TypePerson = None
+                                  ) -> list[PersonSchema]:
         pass
 
     @abstractmethod

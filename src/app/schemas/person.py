@@ -11,21 +11,29 @@ class CreatePersonRequest(BaseModel):
     name: str
     user_type: TypePerson
     posts: int
-    n_followers: int
-    n_following: int
     verified: bool
     followers: list[str] = Field(default_factory=list)
     following: list[str] = Field(default_factory=list)
 
-class PersonResponse(BaseModel):
+class UpdatePersonRequest(BaseModel):
+    user_type: TypePerson
+    posts: int
+    verified: bool
+    followers: list[str] = Field(default_factory=list)
+    following: list[str] = Field(default_factory=list)
+
+class PersonResponseBase(BaseModel):
     name: str
     user_type: TypePerson
     posts: int
     n_followers: int
     n_following: int
     verified: bool
-    followers: list["PersonResponse"] = Field(default_factory=list)
-    following: list["PersonResponse"] = Field(default_factory=list)
+
+
+class PersonResponse(PersonResponseBase):
+    followers: list["PersonResponseBase"] = Field(default_factory=list)
+    following: list["PersonResponseBase"] = Field(default_factory=list)
 
     @classmethod
     def from_person_schema(cls, person: PersonSchema) -> "PersonResponse":

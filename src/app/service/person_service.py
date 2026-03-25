@@ -1,7 +1,7 @@
 from app.domain.service_interfaces import PersonServiceInterface
 from app.domain.repository_interfaces import PersonRepositoryCacheInterface
 from common.db.interfaces import RepositoryPeopleInterface
-from common.schemas.person import PersonSchema, PersonPredict
+from common.schemas.person import PersonSchema, PersonPredict, TypePerson
 from common.graph_builder import GraphBuilder
 from brain.models.model_factory import ModelFactory
 from brain.model_predictor import ModelPredictor
@@ -23,17 +23,16 @@ class PersonService(PersonServiceInterface):
             if person:
                 self.person_repository_cache.save_person(person=person, expired_time=3600)
             else:
-                raise ValueError(f"Person with name '{person_name}' not found in cache or database.")
+                return None
         return person
 
     def save_person(self, person: PersonSchema, followers_db: list[str] = None, following_db: list[str] = None):
-        person = self.get_person(person_name=person.name)
-        if person:
+        person_db = self.get_person(person_name=person.name)
+        if person_db:
             raise ValueError(f"Person with name '{person.name}' already exists.")
         self.person_repository_db.create_person(person)
         self.person_repository_db.create_relationships(person=person, followers=followers_db,
                                                        following=following_db)
-        self.person_repository_cache.save_person(person, expired_time=3600)
 
     def delete_person(self, person_name: str):
         person = self.get_person(person_name=person_name)
@@ -42,20 +41,20 @@ class PersonService(PersonServiceInterface):
         self.person_repository_db.delete_person(name=person_name)
         self.person_repository_cache.delete_person(person_name=person_name)
 
-    def update_person(self, person: PersonSchema):
-        person = self.get_person(person_name=person.name)
-        if not person:
+    def update_person(self, person: PersonSchema, followers_db: list[str] = None, following_db: list[str] = None):
+        person_db = self.get_person(person_name=person.name)
+        if not person_db:
             raise ValueError(f"Person with name '{person.name}' not found.")
         self.person_repository_db.update_person(person=person)
+        self.person_repository_db.update_relationships(person=person, followers=followers_db, following=following_db)
         self.person_repository_cache.delete_person(person_name=person.name)
-        return person
 
-    def list_people(self, offset: int = 0, limit: int = 20) -> list[PersonSchema]:
+    def list_people(self, offset: int = 0, limit: int = 20, type_person: TypePerson = None) -> list[PersonSchema]:
         if offset < 0 or limit <= 0:
             raise ValueError("Offset must be non-negative and limit must be positive.")
         if limit > 100:
             raise ValueError("Limit must not exceed 100.")
-        return self.person_repository_db.get_persons_by_pagination(skip=offset, limit=limit)
+        return self.person_repository_db.get_persons_by_pagination(skip=offset, limit=limit, type_person=type_person)
 
     def count_people(self) -> int:
         return self.person_repository_db.count_persons()
