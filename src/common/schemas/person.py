@@ -16,9 +16,15 @@ class PersonBase:
     n_following: int
     verified: bool
 
+    @property
     def attributes(self) -> list[float]:
         return [self.n_followers, self.n_following, self.posts, self.verified]
 
+    @classmethod
+    def from_schema(cls, person_schema: "PersonSchema") -> "PersonBase":
+        return cls(name=person_schema.name, user_type=person_schema.user_type, posts=person_schema.posts,
+                   n_followers=person_schema.n_followers, n_following=person_schema.n_following,
+                   verified=person_schema.verified)
 
 
 @dataclass

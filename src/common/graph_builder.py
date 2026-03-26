@@ -1,3 +1,5 @@
+from torch_geometric.sampler.neighbor_sampler import node_sample
+
 from common.schemas.person import PersonSchema
 from common.schemas.person import TypePerson
 import torch
@@ -7,7 +9,27 @@ class GraphBuilder:
 
     @staticmethod
     def _create_node_mapping(persons: list[PersonSchema]) -> dict[str, int]:
-        return {person.name: i for i, person in enumerate(persons)}
+        idx = 0
+        node_mapping = {}
+        for person in persons:
+            persons_mapping = [person] + person.following + person.followers
+            for person_mapping in persons_mapping:
+                if person_mapping.name not in node_mapping:
+                    node_mapping[person_mapping.name] = idx
+                    idx += 1
+        return node_mapping
+
+    @staticmethod
+    def _create_attributes_list(persons: list[PersonSchema]) -> list[list[float]]:
+        attributes_list = []
+        persons_set = set()
+        for person in persons:
+            persons_attributes = [person] + person.following + person.followers
+            for person_attribute in persons_attributes:
+                if person_attribute.name not in persons_set:
+                    persons_set.add(person_attribute.name)
+                    attributes_list.append(person_attribute.attributes)
+        return attributes_list
 
     @staticmethod
     def _add_validation_mask(data: Data, p_validation: float):
@@ -25,16 +47,14 @@ class GraphBuilder:
     def create_graph(cls, persons: list[PersonSchema], p_validation: float = None, predict_persons: list[str] = None
                      ) -> Data:
         node_mapping = cls._create_node_mapping(persons=persons)
-
-        attributes_list = []
+        attributes_list = cls._create_attributes_list(persons=persons)
         type_person_list = []
         edge_sources = []
-        predict_mask = torch.zeros(len(persons), dtype=torch.bool)
+        predict_mask = torch.zeros(len(attributes_list), dtype=torch.bool)
         edge_targets = []
 
         for person in persons:
             source_idx = node_mapping[person.name]
-            attributes_list.append(person.attributes)
             type_person_list.append(0 if person.user_type == TypePerson.BOT else 1)
             if predict_persons is not None and person.name in predict_persons:
                 predict_mask[source_idx] = True
@@ -42,6 +62,10 @@ class GraphBuilder:
                 if follow.name in node_mapping:
                     edge_sources.append(source_idx)
                     edge_targets.append(node_mapping[follow.name])
+            for follow in person.followers:
+                if follow.name in node_mapping:
+                    edge_sources.append(node_mapping[follow.name])
+                    edge_targets.append(source_idx)
 
 
         x = torch.tensor(attributes_list, dtype=torch.float)

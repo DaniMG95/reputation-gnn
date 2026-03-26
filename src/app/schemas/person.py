@@ -1,6 +1,12 @@
 from pydantic import BaseModel
 from pydantic.fields import Field
-from common.schemas.person import PersonSchema, TypePerson
+from common.schemas.person import PersonSchema, TypePerson, PersonBase
+
+
+class PersonPredict(BaseModel):
+    name: str
+    user_type: TypePerson
+    confidence: float
 
 
 class PredictRequestPerson(BaseModel, PersonSchema):
@@ -30,6 +36,17 @@ class PersonResponseBase(BaseModel):
     n_following: int
     verified: bool
 
+    @classmethod
+    def from_person_schema(cls, person: PersonBase) -> "PersonResponseBase":
+        return cls(
+            name=person.name,
+            user_type=person.user_type,
+            posts=person.posts,
+            n_followers=person.n_followers,
+            n_following=person.n_following,
+            verified=person.verified
+        )
+
 
 class PersonResponse(PersonResponseBase):
     followers: list["PersonResponseBase"] = Field(default_factory=list)
@@ -44,8 +61,8 @@ class PersonResponse(PersonResponseBase):
             n_followers=person.n_followers,
             n_following=person.n_following,
             verified=person.verified,
-            followers=[cls.from_person_schema(follower) for follower in person.followers],
-            following=[cls.from_person_schema(following) for following in person.following]
+            followers=[PersonResponseBase.from_person_schema(follower) for follower in person.followers],
+            following=[PersonResponseBase.from_person_schema(following) for following in person.following]
         )
 
 class PaginationPersonResponse(BaseModel):

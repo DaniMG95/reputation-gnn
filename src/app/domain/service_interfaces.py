@@ -23,7 +23,7 @@ class PersonServiceInterface(ABC):
         pass
 
     @abstractmethod
-    def predict_type_person(self, person: PersonSchema, followers_db: list[str], following_db: list[str],
-                            hops: int = 0) -> PersonPredict:
+    def predict_type_person(self, person: PersonSchema, followers_db: list[str], following_db: list[str]
+                            ) -> PersonPredict:
         pass
 

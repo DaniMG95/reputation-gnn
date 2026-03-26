@@ -36,7 +36,7 @@ class RepositoryPeopleInterface(ABC):
         pass
 
     @abstractmethod
-    def get_all_persons(self, type_person: TypePerson) -> list[PersonSchema]:
+    def get_all_persons(self) -> list[PersonSchema]:
         pass
 
     @abstractmethod
@@ -52,7 +52,7 @@ class RepositoryPeopleInterface(ABC):
         pass
 
     @abstractmethod
-    def get_neighborhoods(self, names: list[str], hops: int = 1) -> list[PersonSchema]:
+    def get_neighborhoods(self, names: list[str], limit: int = 50) -> list[PersonSchema]:
         pass
 
     @abstractmethod

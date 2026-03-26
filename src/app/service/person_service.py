@@ -1,7 +1,7 @@
 from app.domain.service_interfaces import PersonServiceInterface
 from app.domain.repository_interfaces import PersonRepositoryCacheInterface
 from common.db.interfaces import RepositoryPeopleInterface
-from common.schemas.person import PersonSchema, PersonPredict, TypePerson
+from common.schemas.person import PersonSchema, PersonPredict, TypePerson, PersonBase
 from common.graph_builder import GraphBuilder
 from brain.models.model_factory import ModelFactory
 from brain.model_predictor import ModelPredictor
@@ -69,21 +69,24 @@ class PersonService(PersonServiceInterface):
         data_string = json.dumps(relevant_data, sort_keys=True)
         return hashlib.sha256(data_string.encode()).hexdigest()
 
-    def predict_type_person(self, person: PersonSchema, followers_db: list[str], following_db: list[str],
-                            hops: int = 0) -> PersonPredict:
+    def predict_type_person(self, person: PersonSchema, followers_db: list[str], following_db: list[str]
+                            ) -> PersonPredict:
+        followers  = []
+        following = []
         if followers_db:
-            followers = self.person_repository_db.get_neighborhoods(names=followers_db, hops=hops)
-            person.followers =+ followers
+            followers = self.person_repository_db.get_neighborhoods(names=followers_db, limit=2)
+            person.followers += [PersonBase.from_schema(person_schema=follower) for follower in followers]
         if following_db:
-            following = self.person_repository_db.get_neighborhoods(names=following_db, hops=hops)
-            person.following =+ following
+            following = self.person_repository_db.get_neighborhoods(names=following_db, limit=2)
+            person.following += [PersonBase.from_schema(person_schema=follow) for follow in following]
         hash_person = self.__generate_hash_person(person=person)
         person_predict = self.person_repository_cache.get_prediction(hash_person=hash_person)
         if person_predict:
                 return person_predict
-        graph = GraphBuilder.create_graph(persons=[person] + person.followers + person.following,
+        graph = GraphBuilder.create_graph(persons=[person] + followers + following,
                                           predict_persons=[person.name])
-        bot_model = ModelFactory.create_model(model_name=settings.model_name,
+        bot_model = ModelFactory.create_model(model_name=settings.model_name, in_channels=graph.num_features,
+                                              out_channels=settings.out_channels,
                                               hidden_channels = settings.hidden_channels)
         model_preditor = ModelPredictor(model=bot_model, model_path=settings.model_path)
         prediction = model_preditor.predict(new_data=graph, names=[person.name])[0]

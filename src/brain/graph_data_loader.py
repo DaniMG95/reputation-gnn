@@ -14,8 +14,8 @@ class GraphDataLoader:
         graph = GraphBuilder.create_graph(persons=persons, p_validation=p_validation)
         return graph
 
-    def create_subgraph_by_persons(self, names: list[str], hops: int = 1, mask_predict: bool = False) -> Data:
-        persons = self.repository_people.get_neighborhoods(names=names, hops=hops)
+    def create_subgraph_by_persons(self, names: list[str], mask_predict: bool = False) -> Data:
+        persons = self.repository_people.get_neighborhoods(names=names)
         if mask_predict:
             graph = GraphBuilder.create_graph(persons=persons, predict_persons=names)
         else:

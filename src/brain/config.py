@@ -8,7 +8,6 @@ class Settings(BaseSettings):
     learning_rate: float = 0.01
     ratio_validation: float = 0.2
     n_nodes_test: int = 30
-    hops_test : int = 2
 
     class Config:
         env_file = ".env"

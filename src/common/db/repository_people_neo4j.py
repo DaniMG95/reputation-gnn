@@ -1,5 +1,5 @@
 from common.db.models import Person
-from common.schemas.person import PersonSchema, TypePerson
+from common.schemas.person import PersonSchema, TypePerson, PersonBase
 from common.db.interfaces import RepositoryPeopleInterface
 from common.logger import LoggerIngest
 
@@ -78,21 +78,24 @@ class RepositoryPeopleNeo4j(RepositoryPeopleInterface):
         person_db.n_followers = len(person_db.followers)
         person_db.save()
 
-    @staticmethod
-    def _transform_to_schema(person_db: Person) -> PersonSchema:
+    def _transform_to_schema(self, person_db: Person) -> PersonSchema:
         person = PersonSchema(name=person_db.name, user_type=TypePerson(person_db.user_type), posts=person_db.posts,
                               n_followers=person_db.n_followers, n_following=person_db.n_following,
                               verified=person_db.verified)
-        person.followers = [PersonSchema(name=follower.name, user_type=TypePerson(follower.user_type),
-                                         posts=follower.posts, n_followers=follower.n_followers,
-                                         n_following=follower.n_following, verified=follower.verified)
-                            for follower in person_db.followers]
-        person.following = [PersonSchema(name=follow.name, user_type=TypePerson(follow.user_type), posts=follow.posts,
-                                         n_followers=follow.n_followers, n_following=follow.n_following,
-                                         verified=follow.verified)
-                            for follow in person_db.following]
+        person.followers = [self._to_base(follower) for follower in person_db.followers]
+        person.following = [self._to_base(follow) for follow in person_db.following]
         return person
 
+    @staticmethod
+    def _to_base(node_db: Person) -> PersonBase:
+        return PersonBase(
+            name=node_db.name,
+            user_type=TypePerson(node_db.user_type),
+            posts=node_db.posts,
+            n_followers=node_db.n_followers,
+            n_following=node_db.n_following,
+            verified=node_db.verified
+        )
 
     def get_person(self, name: str) -> PersonSchema | None:
         person_db = self._get_person_db(name=name)
@@ -102,8 +105,7 @@ class RepositoryPeopleNeo4j(RepositoryPeopleInterface):
 
     def get_persons_by_type(self, user_type: TypePerson) -> list[PersonSchema]:
         persons_db = Person.nodes.filter(user_type=user_type.value)
-        return [self._transform_to_schema(person_db)
-                for person_db in persons_db]
+        return [self._transform_to_schema(person_db) for person_db in persons_db]
 
     def get_persons_by_pagination(self, skip: int = 0, limit: int = 10, type_person: TypePerson = None
                                   ) -> list[PersonSchema]:
@@ -135,15 +137,47 @@ class RepositoryPeopleNeo4j(RepositoryPeopleInterface):
     def get_persons_by_names(self, names: list[str]) -> list[PersonSchema]:
         return [person for name in names if (person := self.get_person(name)) is not None]
 
-    def get_neighborhoods(self, names: list[str], hops: int = 1) -> list[PersonSchema]:
+    def get_neighborhoods(self, names: list[str], limit: int = 50) -> list[PersonSchema]:
         query = f"""
-                MATCH (p:Person)
-                WHERE p.name IN $names_list
-                MATCH (p)-[:FOLLOWS*0..{hops}]-(neighbors)
-                RETURN DISTINCT neighbors
-                """
+            UNWIND $names_list AS name
+            CALL (name){{
+                MATCH (p:Person {{name: name}})
+                
+                OPTIONAL MATCH (p)-[:FOLLOWS]->(fg)
+                WITH p, fg ORDER BY rand()
+                WITH p, collect(DISTINCT fg)[0..{limit}] AS following_list
+                
+                OPTIONAL MATCH (p)<-[:FOLLOWS*1]-(fr)
+                WITH p, following_list, fr ORDER BY rand()
+                WITH p, following_list, collect(DISTINCT fr)[0..{limit}] AS followers_list
+                
+                RETURN p AS root, following_list, followers_list
+            }}
+            RETURN root, following_list, followers_list 
+        """
         results, _ = self.db.cypher_query(query, {'names_list': names})
-        return [self._transform_to_schema(Person.inflate(row[0])) for row in results]
+
+        final_list = []
+        for row in results:
+            root = Person.inflate(row[0])
+            following_list = [Person.inflate(follow) for follow in row[1]]
+            followers_list = [Person.inflate(follower) for follower in row[2]]
+
+            root_schema = PersonSchema(
+                name=root.name,
+                user_type=TypePerson(root.user_type),
+                posts=root.posts,
+                n_followers=root.n_followers,
+                n_following=root.n_following,
+                verified=root.verified
+            )
+
+            root_schema.following = [self._to_base(follow) for follow in following_list]
+            root_schema.followers = [self._to_base(follow) for follow in followers_list]
+
+            final_list.append(root_schema)
+
+        return final_list
 
     def get_random_nodes(self, n: int) -> list[PersonSchema]:
         query = f"""

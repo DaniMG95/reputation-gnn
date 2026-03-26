@@ -41,7 +41,7 @@ def predict_eval():
 
     logger.info("Creating subgraph for prediction...")
     names = [person.name for person in persons_randoms]
-    new_data = graph_data_loader.create_subgraph_by_persons(names=names, hops=settings.hops_test, mask_predict=True)
+    new_data = graph_data_loader.create_subgraph_by_persons(names=names, mask_predict=True)
 
     bot_model = BotDetectorGCN(in_channels=new_data.num_features, hidden_channels=settings.hidden_channels,
                                out_channels=2)
@@ -67,5 +67,5 @@ def predict_eval():
 
 
 if __name__ == "__main__":
-    train()
+    # train()
     predict_eval()
