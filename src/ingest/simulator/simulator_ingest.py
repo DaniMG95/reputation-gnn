@@ -1,5 +1,5 @@
 from ingest.simulator.service_people import ServicePeople
-from common.logger import LoggerIngest
+from common.logger import Logger
 from ingest.config import settings
 
 class SimulatorIngest:
@@ -11,7 +11,7 @@ class SimulatorIngest:
         self.p_bots = p_bots
         self.p_influencers = p_influencers
         self.service_people = service_people
-        self.logger = LoggerIngest(name="simulator_ingest")
+        self.logger = Logger(name="simulator_ingest")
 
 
     def ingest(self):

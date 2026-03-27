@@ -6,6 +6,13 @@ from app.api.depends import get_person_service, connector_redis, repository_peop
 from brain.model_predictor import ModelPredictor
 from brain.models.model_factory import ModelFactory
 from app.config import settings
+from app.api.exceptions.custom_exceptions import AppBaseException
+from app.api.exceptions.handler import app_exception_handler, global_exception_handler
+
+
+def setup_exception_handlers(app: FastAPI):
+    app.add_exception_handler(AppBaseException, app_exception_handler)
+    app.add_exception_handler(Exception, global_exception_handler)
 
 
 @asynccontextmanager
@@ -25,6 +32,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 app.include_router(api_router)
+setup_exception_handlers(app=app)
 
 
 

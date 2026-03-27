@@ -3,12 +3,12 @@ from common.db.repository_people_neo4j import RepositoryPeopleNeo4j
 from neomodel import db
 from ingest.simulator.service_people import ServicePeople
 from common.db.connection import init_db_connection
-from common.logger import LoggerIngest
+from common.logger import Logger
 import argparse
 
 def main():
-    LoggerIngest.setup_logging()
-    logger_ingest = LoggerIngest(name="main")
+    Logger.setup_logging()
+    logger_ingest = Logger(name="main")
 
     parser = argparse.ArgumentParser(description='Ingest data into the graph database.')
     parser.add_argument('--n_accounts', type=int, default=100, help='Number of accounts to create')

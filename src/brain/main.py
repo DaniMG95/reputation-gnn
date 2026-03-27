@@ -6,12 +6,12 @@ from neomodel import db
 from brain.model_trainer import ModelTrainer
 from brain.model_predictor import ModelPredictor
 from brain.models.bot_detector_gcn import BotDetectorGCN
-from common.logger import LoggerIngest
+from common.logger import Logger
 from brain.config import settings
 
 def train():
-    LoggerIngest.setup_logging()
-    logger = LoggerIngest(name="brain.main")
+    Logger.setup_logging()
+    logger = Logger(name="brain.main")
     init_db_connection()
 
     repository_people = RepositoryPeopleNeo4j(db=db)
@@ -29,8 +29,8 @@ def train():
 
 
 def predict_eval():
-    LoggerIngest.setup_logging()
-    logger = LoggerIngest(name="brain.main")
+    Logger.setup_logging()
+    logger = Logger(name="brain.main")
     init_db_connection()
 
     repository_people = RepositoryPeopleNeo4j(db=db)

@@ -1,13 +1,13 @@
 from common.db.models import Person
 from common.schemas.person import PersonSchema, TypePerson, PersonBase
 from common.db.interfaces import RepositoryPeopleInterface
-from common.logger import LoggerIngest
+from common.logger import Logger
 
 class RepositoryPeopleNeo4j(RepositoryPeopleInterface):
 
     def __init__(self, db):
         self.db = db
-        self.logger = LoggerIngest(name="common.RepositoryPeopleNeo4j")
+        self.logger = Logger(name="common.RepositoryPeopleNeo4j")
 
     def delete_all(self):
         self.db.cypher_query('MATCH (n:Person) DETACH DELETE n')

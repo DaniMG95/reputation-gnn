@@ -8,6 +8,8 @@ from brain.model_predictor import ModelPredictor
 import json
 import hashlib
 from app.config import settings
+from app.api.exceptions.custom_exceptions import PersonNotFoundError, PersonAlreadyExistsError, \
+    InvalidPaginationParametersError
 
 
 class PersonService(PersonServiceInterface):
@@ -29,7 +31,7 @@ class PersonService(PersonServiceInterface):
     def save_person(self, person: PersonSchema, followers_db: list[str] = None, following_db: list[str] = None):
         person_db = self.get_person(person_name=person.name)
         if person_db:
-            raise ValueError(f"Person with name '{person.name}' already exists.")
+            raise PersonAlreadyExistsError(name=person.name)
         self.person_repository_db.create_person(person)
         self.person_repository_db.create_relationships(person=person, followers=followers_db,
                                                        following=following_db)
@@ -37,23 +39,23 @@ class PersonService(PersonServiceInterface):
     def delete_person(self, person_name: str):
         person = self.get_person(person_name=person_name)
         if not person:
-            raise ValueError(f"Person with name '{person_name}' not found.")
+            raise PersonNotFoundError(name=person_name)
         self.person_repository_db.delete_person(name=person_name)
         self.person_repository_cache.delete_person(person_name=person_name)
 
     def update_person(self, person: PersonSchema, followers_db: list[str] = None, following_db: list[str] = None):
         person_db = self.get_person(person_name=person.name)
         if not person_db:
-            raise ValueError(f"Person with name '{person.name}' not found.")
+            raise PersonNotFoundError(name=person.name)
         self.person_repository_db.update_person(person=person)
         self.person_repository_db.update_relationships(person=person, followers=followers_db, following=following_db)
         self.person_repository_cache.delete_person(person_name=person.name)
 
     def list_people(self, offset: int = 0, limit: int = 20, type_person: TypePerson = None) -> list[PersonSchema]:
         if offset < 0 or limit <= 0:
-            raise ValueError("Offset must be non-negative and limit must be positive.")
+            raise InvalidPaginationParametersError(message="Offset must be non-negative and limit must be positive.")
         if limit > 100:
-            raise ValueError("Limit must not exceed 100.")
+            raise InvalidPaginationParametersError(message="Limit must not exceed 100.")
         return self.person_repository_db.get_persons_by_pagination(skip=offset, limit=limit, type_person=type_person)
 
     def count_people(self) -> int:

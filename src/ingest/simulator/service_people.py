@@ -3,14 +3,14 @@ from common.schemas.person import PersonSchema, TypePerson
 from ingest.simulator.generator_person import GeneratorPeople
 from ingest.simulator.generator import GeneratorFactory
 import random
-from common.logger import LoggerIngest
+from common.logger import Logger
 from tqdm import tqdm
 
 
 class ServicePeople:
     def __init__(self, repository_people: RepositoryPeopleInterface):
         self.repository_people = repository_people
-        self.logger = LoggerIngest(name="service_people")
+        self.logger = Logger(name="service_people")
 
     def create_relationships(self, person: PersonSchema, followers: list[str] = None,
                              following: list[str] = None):

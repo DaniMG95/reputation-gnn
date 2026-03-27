@@ -11,12 +11,9 @@ async def create_person(request: Request, person_request: CreatePersonRequest):
     person_service: PersonService = request.app.state.person_service
     person = PersonSchema(name=person_request.name, user_type=person_request.user_type, posts=person_request.posts,
                           n_followers=0, n_following=0, verified=person_request.verified)
-    try:
-        person_service.save_person(person=person, followers_db=person_request.followers,
-                                   following_db=person_request.following)
-        person = person_service.get_person(person_name=person_request.name)
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+    person_service.save_person(person=person, followers_db=person_request.followers,
+                               following_db=person_request.following)
+    person = person_service.get_person(person_name=person_request.name)
     return PersonResponse.from_person_schema(person=person)
 
 @api_router.patch("/{name}", response_model=PersonResponse)
@@ -38,12 +35,9 @@ async def update_person(name: str, request: Request, person_request: UpdatePerso
 @api_router.get("/", response_model=PaginationPersonResponse)
 def list_people(request: Request, offset: int = 0, limit: int = 20, type_person: TypePerson = None):
     person_service: PersonService = request.app.state.person_service
-    try:
-        people = person_service.list_people(offset=offset, limit=limit, type_person=type_person)
-        people_response = [PersonResponse.from_person_schema(person=person) for person in people]
-        total = person_service.count_people()
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+    people = person_service.list_people(offset=offset, limit=limit, type_person=type_person)
+    people_response = [PersonResponse.from_person_schema(person=person) for person in people]
+    total = person_service.count_people()
     return PaginationPersonResponse(total=total, offset=offset, limit=limit, people=people_response)
 
 

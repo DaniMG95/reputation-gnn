@@ -1,6 +1,6 @@
 from logging import config, getLogger, INFO
 
-class LoggerIngest:
+class Logger:
     APP_NAME = "ingest"
 
     def __init__(self, name: str):
