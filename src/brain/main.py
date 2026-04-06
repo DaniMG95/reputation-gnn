@@ -1,10 +1,10 @@
 from common.db.connection import init_db_connection
 from common.db.repository_people_neo4j import RepositoryPeopleNeo4j
-from brain.graph_data_loader import GraphDataLoader
+from brain.data.graph_loader import GraphDataLoader
 from neomodel import db
-from brain.model.full_batch_model import FullBatchModel
-from brain.model.model_predictor import ModelPredictor
-from brain.models.model_factory import ModelFactory
+from brain.trainers.full_batch import FullBatch
+from brain.predictor import ModelPredictor
+from brain.architectures.factory import ModelFactory
 from common.logger import Logger
 from brain.config import settings
 
@@ -23,7 +23,7 @@ def train():
 
     bot_model = ModelFactory.create_model(model_name=settings.model_name,in_channels=training_graph.num_features,
                                           hidden_channels=settings.hidden_channels, out_channels=2)
-    model_trainer = FullBatchModel(model=bot_model, epochs=settings.epochs, lr=settings.learning_rate)
+    model_trainer = FullBatch(model=bot_model, epochs=settings.epochs, lr=settings.learning_rate)
 
     logger.info("Training the model...")
     model_trainer.train(train_data=training_graph, validation_data=validation_graph)

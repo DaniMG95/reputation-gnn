@@ -1,4 +1,4 @@
-from brain.models.interfaces import ModelBotDetectorInterface
+from brain.architectures.interfaces import ModelBotDetectorInterface
 import torch
 from torch_geometric.data import Data
 from common.graph_builder import GraphBuilder

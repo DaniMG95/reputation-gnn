@@ -1,5 +1,5 @@
-from brain.models.interfaces import ModelBotDetectorInterface
-from brain.model.model_base import ModelBase
+from brain.architectures.interfaces import ModelBotDetectorInterface
+from brain.trainers.model_base import ModelBase
 from common.schemas.person import TypePerson, PersonPredict
 from torch_geometric.data import Data
 from common.graph_builder import GraphBuilder

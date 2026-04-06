@@ -1,5 +1,5 @@
-from brain.models.bot_detector_gcn import BotDetectorGCN
-from brain.models.bot_detector_gcn_sage import BotDetectorGnnSage
+from brain.architectures.bot_detector_gcn import BotDetectorGCN
+from brain.architectures.bot_detector_gcn_sage import BotDetectorGnnSage
 
 class ModelFactory:
     _map_model = {

@@ -3,7 +3,7 @@ from app.domain.repository_interfaces import PersonRepositoryCacheInterface
 from common.db.interfaces import RepositoryPeopleInterface
 from common.schemas.person import PersonSchema, PersonPredict, TypePerson, PersonBase
 from common.graph_builder import GraphBuilder
-from brain.models.interfaces import ModelBotDetectorInterface
+from brain.architectures.interfaces import ModelBotDetectorInterface
 import json
 import hashlib
 from app.api.exceptions.custom_exceptions import PersonNotFoundError, PersonAlreadyExistsError, \

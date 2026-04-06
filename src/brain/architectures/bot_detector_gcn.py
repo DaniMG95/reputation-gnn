@@ -2,7 +2,7 @@ import torch.nn.functional as F
 from torch_geometric.nn import GCNConv
 from torch.nn import BatchNorm1d
 from torch_geometric.data import Data
-from brain.models.interfaces import ModelBotDetectorInterface
+from brain.architectures.interfaces import ModelBotDetectorInterface
 
 
 class BotDetectorGCN(ModelBotDetectorInterface):

@@ -1,6 +1,6 @@
 from app.domain.repository_interfaces import PersonRepositoryCacheInterface
 from common.db.interfaces import RepositoryPeopleInterface
-from brain.models.interfaces import ModelBotDetectorInterface
+from brain.architectures.interfaces import ModelBotDetectorInterface
 from app.schemas.health import HealthCheckResponse, StatusTypes, ComponentStatus
 
 

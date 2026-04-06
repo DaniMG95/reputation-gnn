@@ -3,8 +3,8 @@ from app.api import api_router
 from common.db.connection import init_db_connection
 from contextlib import asynccontextmanager
 from app.api.depends import get_person_service, connector_redis, repository_people_neo4j
-from brain.model.model_predictor import ModelPredictor
-from brain.models.model_factory import ModelFactory
+from brain.predictor import ModelPredictor
+from brain.architectures.factory import ModelFactory
 from app.config import settings
 from app.api.exceptions.custom_exceptions import AppBaseException
 from app.api.exceptions.handler import app_exception_handler, global_exception_handler
