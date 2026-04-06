@@ -3,7 +3,7 @@ from app.api import api_router
 from common.db.connection import init_db_connection
 from contextlib import asynccontextmanager
 from app.api.depends import get_person_service, connector_redis, repository_people_neo4j
-from brain.model.full_batch_model import FullBatchModel
+from brain.model.model_predictor import ModelPredictor
 from brain.models.model_factory import ModelFactory
 from app.config import settings
 from app.api.exceptions.custom_exceptions import AppBaseException
@@ -24,8 +24,7 @@ async def lifespan(app: FastAPI):
     app.state.repository_people_redis = repository_people
     model = ModelFactory.create_model(model_name=settings.model_name, hidden_channels=settings.hidden_channels,
                                       in_channels=settings.num_features, out_channels=settings.out_channels)
-    app.state.model = FullBatchModel(model=model)
-    app.state.model.load_model(path=settings.model_path)
+    app.state.model = ModelPredictor(model=model, model_path=settings.model_path)
     app.state.person_service = get_person_service(con_redis=redis_connector, repository_people=repository_people,
                                                   model=app.state.model)
     yield

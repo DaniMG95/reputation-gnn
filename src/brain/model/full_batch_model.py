@@ -1,9 +1,9 @@
-from brain.model.model_interface import ModelInterface
+from brain.model.model_train_interface import ModelTrainInterface
 from torch_geometric.data import Data
 from tqdm import tqdm
 
 
-class FullBatchModel(ModelInterface):
+class FullBatchModel(ModelTrainInterface):
 
     def train(self, train_data: Data, validation_data: Data = None):
 

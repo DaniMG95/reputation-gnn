@@ -3,6 +3,7 @@ from common.db.repository_people_neo4j import RepositoryPeopleNeo4j
 from brain.graph_data_loader import GraphDataLoader
 from neomodel import db
 from brain.model.full_batch_model import FullBatchModel
+from brain.model.model_predictor import ModelPredictor
 from brain.models.model_factory import ModelFactory
 from common.logger import Logger
 from brain.config import settings
@@ -43,12 +44,11 @@ def test():
 
     bot_model = ModelFactory.create_model(model_name=settings.model_name, in_channels=test_graph.num_features,
                                           hidden_channels=settings.hidden_channels, out_channels=2)
-    model_trainer = FullBatchModel(model=bot_model, epochs=settings.epochs, lr=settings.learning_rate)
-
     logger.info("Loading the model...")
-    model_trainer.load_model(settings.model_path)
+    model_predictor = ModelPredictor(model=bot_model, model_path=settings.model_path)
 
-    acc = model_trainer.eval_predict(data=test_graph)
+
+    acc = model_predictor.eval_predict(data=test_graph)
 
     logger.info(f"Test Accuracy: {acc*100:.2f}%")
 

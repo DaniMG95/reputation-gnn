@@ -1,12 +1,12 @@
 from app.domain.repository_interfaces import PersonRepositoryCacheInterface
 from common.db.interfaces import RepositoryPeopleInterface
-from brain.model.model_interface import ModelInterface
+from brain.models.interfaces import ModelBotDetectorInterface
 from app.schemas.health import HealthCheckResponse, StatusTypes, ComponentStatus
 
 
 class HealthService:
     def __init__(self, repository_people: RepositoryPeopleInterface, cache_connector: PersonRepositoryCacheInterface,
-                 model_predictor: ModelInterface):
+                 model_predictor: ModelBotDetectorInterface):
         self.repository_people = repository_people
         self.cache_connector = cache_connector
         self.model_predictor = model_predictor

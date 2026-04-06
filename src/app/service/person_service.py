@@ -3,7 +3,7 @@ from app.domain.repository_interfaces import PersonRepositoryCacheInterface
 from common.db.interfaces import RepositoryPeopleInterface
 from common.schemas.person import PersonSchema, PersonPredict, TypePerson, PersonBase
 from common.graph_builder import GraphBuilder
-from brain.model.model_interface import ModelInterface
+from brain.models.interfaces import ModelBotDetectorInterface
 import json
 import hashlib
 from app.api.exceptions.custom_exceptions import PersonNotFoundError, PersonAlreadyExistsError, \
@@ -12,7 +12,7 @@ from app.api.exceptions.custom_exceptions import PersonNotFoundError, PersonAlre
 
 class PersonService(PersonServiceInterface):
     def __init__(self, person_repository_cache: PersonRepositoryCacheInterface,
-                 person_repository_db: RepositoryPeopleInterface, model: ModelInterface):
+                 person_repository_db: RepositoryPeopleInterface, model: ModelBotDetectorInterface):
         self.person_repository_cache = person_repository_cache
         self.person_repository_db = person_repository_db
         self.model = model

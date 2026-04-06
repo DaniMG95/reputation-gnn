@@ -67,3 +67,11 @@ class GraphBuilder:
             data.mask = mask
 
         return data
+
+    @staticmethod
+    def get_mask(data: Data) -> torch.Tensor:
+        return data.mask if hasattr(data, 'mask') else torch.ones(len(data.y), dtype=torch.bool)
+
+    @staticmethod
+    def get_names(data: Data) -> list[str]:
+        return data.names if hasattr(data, 'names') else [f'node_{i}' for i in range(len(data.y))]
