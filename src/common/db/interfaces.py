@@ -71,3 +71,7 @@ class RepositoryPeopleInterface(ABC):
     @abstractmethod
     def count_persons(self) -> int:
         pass
+
+    @abstractmethod
+    def get_all_labeled_names(self) -> list[str]:
+        pass

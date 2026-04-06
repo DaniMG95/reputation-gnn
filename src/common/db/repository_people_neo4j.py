@@ -214,3 +214,11 @@ class RepositoryPeopleNeo4j(RepositoryPeopleInterface):
         query = "MATCH (p:Person) RETURN count(p) AS count"
         results, _ = self.db.cypher_query(query)
         return results[0][0] if results else 0
+
+    def get_all_labeled_names(self) -> list[str]:
+        query = """
+        MATCH (p:Person)
+        RETURN p.name AS name
+        """
+        results, _ = self.db.cypher_query(query)
+        return [record[0] for record in results]

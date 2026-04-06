@@ -6,6 +6,14 @@ class TypePerson(str, Enum):
     PERSON = 'person'
     INFLUENCER = 'influencer'
 
+    @staticmethod
+    def transform_to_user_type(user_type_int: int) -> "TypePerson":
+        return TypePerson.BOT if user_type_int == 0 else TypePerson.PERSON
+
+    @staticmethod
+    def transform_to_int(user_type: "TypePerson") -> int:
+        return 0 if user_type == TypePerson.BOT else 1
+
 
 @dataclass
 class PersonBase:
@@ -25,6 +33,10 @@ class PersonBase:
         return cls(name=person_schema.name, user_type=person_schema.user_type, posts=person_schema.posts,
                    n_followers=person_schema.n_followers, n_following=person_schema.n_following,
                    verified=person_schema.verified)
+
+    @property
+    def user_type_int(self) -> int:
+        return TypePerson.transform_to_int(self.user_type)
 
 
 @dataclass

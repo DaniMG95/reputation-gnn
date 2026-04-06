@@ -3,20 +3,19 @@ from app.domain.repository_interfaces import PersonRepositoryCacheInterface
 from common.db.interfaces import RepositoryPeopleInterface
 from common.schemas.person import PersonSchema, PersonPredict, TypePerson, PersonBase
 from common.graph_builder import GraphBuilder
-from brain.models.model_factory import ModelFactory
-from brain.model_predictor import ModelPredictor
+from brain.model.model_interface import ModelInterface
 import json
 import hashlib
-from app.config import settings
 from app.api.exceptions.custom_exceptions import PersonNotFoundError, PersonAlreadyExistsError, \
     InvalidPaginationParametersError
 
 
 class PersonService(PersonServiceInterface):
     def __init__(self, person_repository_cache: PersonRepositoryCacheInterface,
-                 person_repository_db: RepositoryPeopleInterface):
+                 person_repository_db: RepositoryPeopleInterface, model: ModelInterface):
         self.person_repository_cache = person_repository_cache
         self.person_repository_db = person_repository_db
+        self.model = model
 
     def get_person(self, person_name: str):
         person = self.person_repository_cache.get_person(person_name=person_name)
@@ -71,8 +70,7 @@ class PersonService(PersonServiceInterface):
         data_string = json.dumps(relevant_data, sort_keys=True)
         return hashlib.sha256(data_string.encode()).hexdigest()
 
-    def predict_type_person(self, person: PersonSchema, followers_db: list[str], following_db: list[str]
-                            ) -> PersonPredict:
+    def predict_type_person(self, person: PersonSchema, followers_db: list[str], following_db: list[str]) -> PersonPredict:
         followers  = []
         following = []
         if followers_db:
@@ -85,13 +83,8 @@ class PersonService(PersonServiceInterface):
         person_predict = self.person_repository_cache.get_prediction(hash_person=hash_person)
         if person_predict:
                 return person_predict
-        graph = GraphBuilder.create_graph(persons=[person] + followers + following,
-                                          predict_persons=[person.name])
-        bot_model = ModelFactory.create_model(model_name=settings.model_name, in_channels=graph.num_features,
-                                              out_channels=settings.out_channels,
-                                              hidden_channels = settings.hidden_channels)
-        model_preditor = ModelPredictor(model=bot_model, model_path=settings.model_path)
-        prediction = model_preditor.predict(new_data=graph, names=[person.name])[0]
+        graph = GraphBuilder.create_graph(persons=[person] + followers + following, mask_persons=[person.name])
+        prediction = self.model.predict(data=graph)[0]
         self.person_repository_cache.save_prediction(person_predict=prediction, hash_person=hash_person,
                                                      expired_time=3600)
         return prediction
