@@ -3,7 +3,7 @@ from app.domain.repository_interfaces import PersonRepositoryCacheInterface
 from common.db.interfaces import RepositoryPeopleInterface
 from common.schemas.person import PersonSchema, PersonPredict, TypePerson, PersonBase
 from common.graph_builder import GraphBuilder
-from brain.architectures.interfaces import ModelBotDetectorInterface
+from brain.predictor import ModelPredictor
 import json
 import hashlib
 from app.api.exceptions.custom_exceptions import PersonNotFoundError, PersonAlreadyExistsError, \
@@ -12,7 +12,7 @@ from app.api.exceptions.custom_exceptions import PersonNotFoundError, PersonAlre
 
 class PersonService(PersonServiceInterface):
     def __init__(self, person_repository_cache: PersonRepositoryCacheInterface,
-                 person_repository_db: RepositoryPeopleInterface, model: ModelBotDetectorInterface):
+                 person_repository_db: RepositoryPeopleInterface, model: ModelPredictor):
         self.person_repository_cache = person_repository_cache
         self.person_repository_db = person_repository_db
         self.model = model
@@ -84,7 +84,7 @@ class PersonService(PersonServiceInterface):
         if person_predict:
                 return person_predict
         graph, names = GraphBuilder.create_graph(persons=[person] + followers + following, mask_persons=[person.name])
-        prediction = self.model.predict(data=graph)[0]
+        prediction = self.model.predict(data=graph, names=names)[0]
         self.person_repository_cache.save_prediction(person_predict=prediction, hash_person=hash_person,
                                                      expired_time=3600)
         return prediction
