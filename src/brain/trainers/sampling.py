@@ -10,7 +10,7 @@ class Sampling(ModelTrainInterface):
     def train(self, train_data: NeighborLoader, validation_data: NeighborLoader = None):
 
         pbar = tqdm(range(self.epochs), desc="Training Model")
-        acc = None
+        val_loss = None
         for epoch in range(self.epochs):
             total_loss = 0
             for batch in train_data:
@@ -19,9 +19,13 @@ class Sampling(ModelTrainInterface):
             avg_loss = total_loss / len(train_data)
 
             if validation_data is not None and epoch % 20 == 0:
-                acc = self.eval_predict_sampling(loader=validation_data)
+                val_loss = self.val_loss_sampling(loader=validation_data)
+                self.early_stopping(val_loss=val_loss, model=self.model)
+                if self.early_stopping.early_stop:
+                    self.early_stopping.restore_best_weights(self.model)
+                    break
             pbar.update(1)
-            pbar.set_postfix({'loss': f'{avg_loss:.4f}', 'acc_val': f'{acc:.4f}' if acc is not None else 'N/A'})
+            pbar.set_postfix({'loss': f'{avg_loss:.4f}', 'acc_val': f'{val_loss:.4f}' if val_loss is not None else 'N/A'})
 
     @torch.no_grad()
     def eval_predict_sampling(self, loader: NeighborLoader) -> float:
@@ -37,3 +41,12 @@ class Sampling(ModelTrainInterface):
             total_correct += self.calculate_accuracy(out=out, labels=target)
 
         return total_correct / len(loader)
+
+    @torch.no_grad()
+    def val_loss_sampling(self, loader: NeighborLoader) -> float:
+        total_loss = 0
+
+        for batch in loader:
+            total_loss += self.calculate_val_loss(data=batch)
+
+        return total_loss / len(loader)

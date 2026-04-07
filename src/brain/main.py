@@ -7,6 +7,7 @@ from brain.predictor import ModelPredictor
 from brain.architectures.factory import ModelFactory
 from common.logger import Logger
 from brain.config import settings
+from brain.trainers.components.early_stopping import EarlyStopping
 
 Logger.setup_logging()
 init_db_connection()
@@ -23,8 +24,11 @@ def train():
 
     bot_model = ModelFactory.create_model(model_name=settings.model_name,in_channels=training_graph.num_features,
                                           hidden_channels=settings.hidden_channels, out_channels=2)
+    early_stopping = EarlyStopping(patience=settings.early_stopping_patience,
+                                   min_delta=settings.early_stopping_delta)
     model_trainer = ModelTrainerFactory.create_trainer_model(type_model_trainer=settings.type_trainer, model=bot_model,
-                                                             epochs=settings.epochs, lr=settings.learning_rate)
+                                                             epochs=settings.epochs, lr=settings.learning_rate,
+                                                             early_stopping=early_stopping)
 
     train_data = graph_data_loader.prepare_data_for_strategy(data=training_graph, strategy=settings.type_trainer)
     val_data = graph_data_loader.prepare_data_for_strategy(data=validation_graph, strategy=settings.type_trainer)

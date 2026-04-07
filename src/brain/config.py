@@ -14,6 +14,8 @@ class Settings(BaseSettings):
     type_trainer: TypeModelTrainer = TypeModelTrainer.FULL
     num_neighbors: list[int] = [25, 15]
     batch_size: int = 128
+    early_stopping_patience: int = 10
+    early_stopping_delta: float = 0.001
 
     class Config:
         env_file = ".env"
