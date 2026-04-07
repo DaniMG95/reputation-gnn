@@ -26,7 +26,8 @@ class GraphBuilder:
 
 
     @classmethod
-    def create_graph(cls, persons: list[PersonSchema], mask_persons: list[str] = None, normalise: bool = False) -> Data:
+    def create_graph(cls, persons: list[PersonSchema], mask_persons: list[str] = None, normalise: bool = False
+                     ) -> tuple[Data, list[str]]:
         node_mapping = cls._create_node_mapping(persons=persons)
         type_person_list = []
         edge_sources = []
@@ -61,17 +62,12 @@ class GraphBuilder:
             x = (x - x_min) / (x_max - x_min + 1e-6)
 
         data = Data(x=x, edge_index=edge_index, y=y)
-        data.names = names
 
         if mask_persons is not None:
             data.mask = mask
 
-        return data
+        return data, names
 
     @staticmethod
     def get_mask(data: Data) -> torch.Tensor:
         return data.mask if hasattr(data, 'mask') else torch.ones(len(data.y), dtype=torch.bool)
-
-    @staticmethod
-    def get_names(data: Data) -> list[str]:
-        return data.names if hasattr(data, 'names') else [f'node_{i}' for i in range(len(data.y))]

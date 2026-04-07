@@ -2,7 +2,7 @@ from common.db.connection import init_db_connection
 from common.db.repository_people_neo4j import RepositoryPeopleNeo4j
 from brain.data.graph_loader import GraphDataLoader
 from neomodel import db
-from brain.trainers.full_batch import FullBatch
+from brain.trainers.factory import ModelTrainerFactory
 from brain.predictor import ModelPredictor
 from brain.architectures.factory import ModelFactory
 from common.logger import Logger
@@ -23,10 +23,14 @@ def train():
 
     bot_model = ModelFactory.create_model(model_name=settings.model_name,in_channels=training_graph.num_features,
                                           hidden_channels=settings.hidden_channels, out_channels=2)
-    model_trainer = FullBatch(model=bot_model, epochs=settings.epochs, lr=settings.learning_rate)
+    model_trainer = ModelTrainerFactory.create_trainer_model(type_model_trainer=settings.type_trainer, model=bot_model,
+                                                             epochs=settings.epochs, lr=settings.learning_rate)
+
+    train_data = graph_data_loader.prepare_data_for_strategy(data=training_graph, strategy=settings.type_trainer)
+    val_data = graph_data_loader.prepare_data_for_strategy(data=validation_graph, strategy=settings.type_trainer)
 
     logger.info("Training the model...")
-    model_trainer.train(train_data=training_graph, validation_data=validation_graph)
+    model_trainer.train(train_data=train_data, validation_data=val_data)
     logger.info("Saving the model...")
     model_trainer.save_model(settings.model_path)
 
@@ -40,7 +44,7 @@ def test():
     logger.info(f"Loading graph data by test {settings.n_nodes_test} nodes...")
     persons_randoms = repository_people.get_random_nodes(n=settings.n_nodes_test)
     names_randoms = [person.name for person in persons_randoms]
-    test_graph = graph_data_loader.create_subgraph_by_persons(names=names_randoms, mask_predict=True, normalise=True)
+    test_graph, _ = graph_data_loader.create_subgraph_by_persons(names=names_randoms, mask_predict=True, normalise=True)
 
     bot_model = ModelFactory.create_model(model_name=settings.model_name, in_channels=test_graph.num_features,
                                           hidden_channels=settings.hidden_channels, out_channels=2)

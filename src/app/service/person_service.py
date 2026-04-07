@@ -83,7 +83,7 @@ class PersonService(PersonServiceInterface):
         person_predict = self.person_repository_cache.get_prediction(hash_person=hash_person)
         if person_predict:
                 return person_predict
-        graph = GraphBuilder.create_graph(persons=[person] + followers + following, mask_persons=[person.name])
+        graph, names = GraphBuilder.create_graph(persons=[person] + followers + following, mask_persons=[person.name])
         prediction = self.model.predict(data=graph)[0]
         self.person_repository_cache.save_prediction(person_predict=prediction, hash_person=hash_person,
                                                      expired_time=3600)

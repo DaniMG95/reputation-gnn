@@ -1,7 +1,9 @@
 from pydantic_settings import BaseSettings
+from brain.trainers.factory import TypeModelTrainer
+from brain.architectures.factory import TypeModel
 
 class Settings(BaseSettings):
-    model_name: str = "bot_detector_gcn"
+    model_name: TypeModel = TypeModel.GCN
     model_path: str = "bot_detector_gcn.pth"
     hidden_channels: int  = 32
     epochs: int = 200
@@ -9,6 +11,9 @@ class Settings(BaseSettings):
     ratio_validation: float = 0.2
     ratio_test: float = 0.1
     n_nodes_test: int = 20
+    type_trainer: TypeModelTrainer = TypeModelTrainer.FULL
+    num_neighbors: list[int] = [25, 15]
+    batch_size: int = 128
 
     class Config:
         env_file = ".env"

@@ -4,6 +4,7 @@ from brain.trainers.model_base import ModelBase
 import torch
 from torch_geometric.data import Data
 from common.graph_builder import GraphBuilder
+from torch_geometric.loader import NeighborLoader
 
 
 class ModelTrainInterface(ABC, ModelBase):
@@ -17,7 +18,7 @@ class ModelTrainInterface(ABC, ModelBase):
         self.weights = torch.tensor([1.0, 2.5]) if weights is None else torch.tensor(weights)
 
     @abstractmethod
-    def train(self, train_data: Data, validation_data: Data = None):
+    def train(self, train_data: Data | NeighborLoader, validation_data: Data | NeighborLoader = None):
         pass
 
     @staticmethod

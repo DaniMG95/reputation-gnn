@@ -18,11 +18,10 @@ class ModelPredictor(ModelBase):
 
 
     @torch.no_grad()
-    def predict(self, data: Data) -> list[PersonPredict]:
+    def predict(self, data: Data, names: list[str]) -> list[PersonPredict]:
         self.model.eval()
         results = []
         mask = GraphBuilder.get_mask(data=data)
-        names = GraphBuilder.get_names(data=data)
         target_names = [name for i, name in enumerate(names) if mask[i]]
 
         logits = self.model(data)[mask]
