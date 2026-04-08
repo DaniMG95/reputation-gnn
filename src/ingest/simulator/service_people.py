@@ -20,11 +20,13 @@ class ServicePeople:
                                max_posts_influencers: int, mean_posts_persons: int):
         n_persons = n_persons - n_bots
         n_persons_not_influencers = n_persons - n_influencers
-        names_used = []
         generator_type_bot = GeneratorFactory.get_generator(type_person=TypePerson.BOT)
+        self.logger.debug(msg=f"Generating {n_bots} bots, {n_influencers} influencers and "
+                             f"{n_persons_not_influencers} regular persons")
         generator_bot = GeneratorPeople(type_person=TypePerson.BOT, n_people=n_bots,
                                         range_posts=(0, mean_posts_bots), n_followers=0, n_following=0,
                                         generator=generator_type_bot)
+        self.logger.debug(msg=f"Generating bots with mean posts {mean_posts_bots}")
         for bot in tqdm(generator_bot, desc="Generating bots"):
             self.repository_people.create_person(person=bot)
 
@@ -37,6 +39,8 @@ class ServicePeople:
         generator_influencers = GeneratorPeople(type_person=TypePerson.INFLUENCER, n_people=n_influencers,
                                                 range_posts=(mean_posts_persons, max_posts_influencers),
                                                 n_followers=0, n_following=0, generator=generator_type_influencer)
+        self.logger.debug(msg=f"Generating influencers with mean posts between {mean_posts_persons} and "
+                              f"{max_posts_influencers}")
         for influencer in tqdm(generator_influencers, desc="Generating influencers"):
             self.repository_people.create_person(person=influencer)
 
@@ -47,6 +51,7 @@ class ServicePeople:
         generator_persons = GeneratorPeople(type_person=TypePerson.PERSON, n_people=n_persons_not_influencers,
                                             range_posts=(50, mean_posts_persons), n_followers=0, n_following=0,
                                             generator=generator_type_person)
+        self.logger.debug(msg=f"Generating regular persons with mean posts between 50 and {mean_posts_persons}")
         for person in tqdm(generator_persons, desc="Generating persons"):
             self.repository_people.create_person(person=person)
 
@@ -58,6 +63,8 @@ class ServicePeople:
         bots = self.repository_people.get_persons_by_type(user_type=TypePerson.BOT)
 
         total_steps = len(real_persons) + n_persons_follow_bot
+        self.logger.debug(msg=f"Creating relationships for {len(real_persons)} real persons "
+                             f"and {n_persons_follow_bot} persons following bots")
 
         with tqdm(total=total_steps, desc="Creating relationships for real persons") as pbar:
             for real_person in real_persons:
@@ -80,6 +87,7 @@ class ServicePeople:
         bots = self.repository_people.get_persons_by_type(user_type=TypePerson.BOT)
         real_persons = self.repository_people.get_persons_by_type(user_type=TypePerson.PERSON)
         real_persons += self.repository_people.get_persons_by_type(user_type=TypePerson.INFLUENCER)
+        self.logger.debug(msg=f"Creating relationships for {len(bots)} bots following real persons and other bots")
         for bot in tqdm(bots, desc="Creating relationships for bots following persons and bots"):
             bots_selected = bots[:]
             bots_selected.remove(bot)

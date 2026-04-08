@@ -10,17 +10,19 @@ class RepositoryPeopleNeo4j(RepositoryPeopleInterface):
         self.logger = Logger(name="common.RepositoryPeopleNeo4j")
 
     def delete_all(self):
+        self.logger.debug("Deleting all persons from the database.")
         self.db.cypher_query('MATCH (n:Person) DETACH DELETE n')
 
     def create_person(self, person: PersonSchema):
+        self.logger.debug("Creating person with name '%s' in the database.", person.name)
         Person(name=person.name, user_type=person.user_type.value, posts=person.posts, n_followers=person.n_followers,
                n_following=person.n_following, verified=person.verified).save()
 
-    @staticmethod
-    def _get_person_db(name: str) -> Person | None:
+    def _get_person_db(self, name: str) -> Person | None:
         try:
             return Person.nodes.get(name=name)
         except Person.DoesNotExist:
+            self.logger.warning(f"Person with name {name} not found in database.")
             return None
 
     @staticmethod
@@ -31,10 +33,13 @@ class RepositoryPeopleNeo4j(RepositoryPeopleInterface):
         person_db.save()
 
     def update_relationships(self, person: PersonSchema, followers: list[str] = None, following: list[str] = None):
+        self.logger.debug(f"Updating relationships for person '{person.name}' with followers: {followers} and "
+                          f"following: {following}")
         person_db = self._get_person_db(name=person.name)
         followers_needs = None
         following_needs = None
         if not person_db:
+            self.logger.warning("Person with name '{person.name}' not found in database. Cannot update relationships.")
             raise ValueError(f"Person with name '{person.name}' not found in database.")
         if followers:
             followers_needs = followers[:]
@@ -55,8 +60,11 @@ class RepositoryPeopleNeo4j(RepositoryPeopleInterface):
 
     def create_relationships(self, person: PersonSchema, followers: list[str] = None,
                              following: list[str] = None):
+        self.logger.debug(f"Creating relationships for person '{person.name}' with followers: "
+                          f"{followers} and following: {following}")
         person_db = self._get_person_db(name=person.name)
         if not person_db:
+            self.logger.warning(f"Person with name '{person.name}' not found in database. Cannot create relationships.")
             raise ValueError(f"Person with name '{person.name}' not found in database.")
         if followers:
             for follower in followers:
@@ -98,18 +106,21 @@ class RepositoryPeopleNeo4j(RepositoryPeopleInterface):
         )
 
     def get_person(self, name: str) -> PersonSchema | None:
+        self.logger.debug(f"Getting person with name '{name}' from the database.")
         person_db = self._get_person_db(name=name)
         if not person_db:
+            self.logger.warning(f"Person with name '{name}' not found in database.")
             return None
         return self._transform_to_schema(person_db)
 
     def get_persons_by_type(self, user_type: TypePerson) -> list[PersonSchema]:
+        self.logger.debug(f"Getting persons by type '{user_type.value}' from the database.")
         persons_db = Person.nodes.filter(user_type=user_type.value)
         return [self._transform_to_schema(person_db) for person_db in persons_db]
 
     def get_persons_by_pagination(self, skip: int = 0, limit: int = 10, type_person: TypePerson = None
                                   ) -> list[PersonSchema]:
-
+        self.logger.debug(f"Getting persons by pagination with skip={skip}, limit={limit}, type_person={type_person}")
         conditional = f"WHERE p.user_type = '{type_person.value}'" if type_person else ""
         query = f"""
         MATCH (p:Person)
@@ -123,6 +134,7 @@ class RepositoryPeopleNeo4j(RepositoryPeopleInterface):
         return [self._transform_to_schema(Person.inflate(row[0])) for row in results]
 
     def get_all_persons(self) -> list[PersonSchema]:
+        self.logger.debug("Getting all persons from the database.")
         persons_db = Person.nodes.all()
         return [self._transform_to_schema(person_db)
                 for person_db in persons_db]
@@ -135,9 +147,11 @@ class RepositoryPeopleNeo4j(RepositoryPeopleInterface):
         person_db.save()
 
     def get_persons_by_names(self, names: list[str]) -> list[PersonSchema]:
+        self.logger.debug(f"Getting persons by names: {names}")
         return [person for name in names if (person := self.get_person(name)) is not None]
 
     def get_neighborhoods(self, names: list[str], limit: int = 50) -> list[PersonSchema]:
+        self.logger.debug("Getting neighborhoods for names: %s with limit: %d", names, limit)
         query = f"""
             UNWIND $names_list AS name
             CALL (name){{
@@ -180,6 +194,7 @@ class RepositoryPeopleNeo4j(RepositoryPeopleInterface):
         return final_list
 
     def get_random_nodes(self, n: int) -> list[PersonSchema]:
+        self.logger.debug("Getting random nodes from the database.")
         query = f"""
         MATCH (p:Person)
         RETURN p, rand() as r
@@ -192,13 +207,16 @@ class RepositoryPeopleNeo4j(RepositoryPeopleInterface):
         return []
 
     def delete_person(self, name: str):
+        self.logger.debug(f"Deleting person with name '{name}' from database.")
         person_db = Person.nodes.get(name=name)
         if person_db:
             person_db.delete()
         else:
+            self.logger.warning(f"Person with name '{name}' not found in database. Cannot delete.")
             raise ValueError(f"Person with name '{name}' not found in database.")
 
     def ping(self) -> bool:
+        self.logger.debug("Pinging Neo4j database.")
         try:
             self.db.cypher_query("RETURN 1")
             return True
@@ -211,11 +229,13 @@ class RepositoryPeopleNeo4j(RepositoryPeopleInterface):
         return "Neo4j"
 
     def count_persons(self) -> int:
+        self.logger.debug("Counting the number of persons in the database.")
         query = "MATCH (p:Person) RETURN count(p) AS count"
         results, _ = self.db.cypher_query(query)
         return results[0][0] if results else 0
 
     def get_all_labeled_names(self) -> list[str]:
+        self.logger.debug("Getting all labeled names from the database.")
         query = """
         MATCH (p:Person)
         RETURN p.name AS name

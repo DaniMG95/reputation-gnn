@@ -4,6 +4,7 @@ from common.schemas.person import TypePerson, PersonPredict
 from torch_geometric.data import Data
 from common.graph_builder import GraphBuilder
 import torch
+from common.logger import Logger
 
 
 class ModelPredictor(ModelBase):
@@ -12,13 +13,16 @@ class ModelPredictor(ModelBase):
         super().__init__(model=model)
         self.model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
         self.model.eval()
+        self.logger = Logger("ModelPredictor")
 
     def load_model(self, path: str):
+        self.logger.debug(f"Loading model from {path}")
         self.model.load_state_dict(torch.load(path))
 
 
     @torch.no_grad()
     def predict(self, data: Data, names: list[str]) -> list[PersonPredict]:
+        self.logger.debug(f"Predicting persons whose names are {names}")
         self.model.eval()
         results = []
         mask = GraphBuilder.get_mask(data=data)
@@ -33,4 +37,5 @@ class ModelPredictor(ModelBase):
             confidence = probs[i][pred_idx].item()
             label = TypePerson.transform_to_user_type(user_type_int=pred_idx)
             results.append(PersonPredict(name=target_names[i], user_type=label, confidence=confidence))
+            self.logger.debug(f"Predicted {target_names[i]} as {label} with confidence {confidence:.4f}")
         return results
