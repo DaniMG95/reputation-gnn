@@ -28,3 +28,7 @@ class PersonAlreadyExistsError(AppBaseException):
 class InvalidPaginationParametersError(AppBaseException):
     def __init__(self, message: str):
         super().__init__(message=message, status_code=400, code="INVALID_PAGINATION_PARAMETERS")
+
+class InvalidModelError(AppBaseException):
+    def __init__(self, message: str):
+        super().__init__(message=message, status_code=400, code="INVALID_MODEL")

@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from app.api import api_router
 from common.db.connection import init_db_connection
 from contextlib import asynccontextmanager
-from app.api.depends import get_person_service, connector_redis, repository_people_neo4j
+from app.api.depends import get_person_service, connector_redis, repository_people_neo4j, get_predict_service
 from brain.predictor import ModelPredictor
 from brain.architectures.factory import ModelFactory
 from app.config import settings
@@ -31,8 +31,9 @@ async def lifespan(app: FastAPI):
     model = ModelFactory.create_model(model_name=settings.model_name, hidden_channels=settings.hidden_channels,
                                       in_channels=settings.num_features, out_channels=settings.out_channels)
     app.state.model = ModelPredictor(model=model, model_path=settings.model_path)
-    app.state.person_service = get_person_service(con_redis=redis_connector, repository_people=repository_people,
-                                                  model=app.state.model)
+    app.state.person_service = get_person_service(con_redis=redis_connector, repository_people=repository_people)
+    app.state.predict_service = get_predict_service(con_redis=redis_connector, repository_people=repository_people,
+                                                    model=app.state.model)
     yield
     logger.info("Shutting down API application")
     redis_connector.close()

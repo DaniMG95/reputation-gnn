@@ -1,11 +1,7 @@
 from app.domain.service_interfaces import PersonServiceInterface
 from app.domain.repository_interfaces import PersonRepositoryCacheInterface
 from common.db.interfaces import RepositoryPeopleInterface
-from common.schemas.person import PersonSchema, PersonPredict, TypePerson, PersonBase
-from common.graph_builder import GraphBuilder
-from brain.predictor import ModelPredictor
-import json
-import hashlib
+from common.schemas.person import PersonSchema, TypePerson
 from app.api.exceptions.custom_exceptions import PersonNotFoundError, PersonAlreadyExistsError, \
     InvalidPaginationParametersError
 from common.logger import Logger
@@ -13,10 +9,9 @@ from common.logger import Logger
 
 class PersonService(PersonServiceInterface):
     def __init__(self, person_repository_cache: PersonRepositoryCacheInterface,
-                 person_repository_db: RepositoryPeopleInterface, model: ModelPredictor):
+                 person_repository_db: RepositoryPeopleInterface):
         self.person_repository_cache = person_repository_cache
         self.person_repository_db = person_repository_db
-        self.model = model
         self.logger = Logger(self.__class__.__name__)
 
     def get_person(self, person_name: str):
@@ -76,33 +71,4 @@ class PersonService(PersonServiceInterface):
         self.logger.debug("Counting total number of people in the database.")
         return self.person_repository_db.count_persons()
 
-    @staticmethod
-    def __generate_hash_person(person: PersonSchema) -> str:
-        relevant_data = {
-            "attr": person.attributes,
-            "following": sorted([(p.name, p.attributes) for p in person.following]),
-            "followers": sorted([(p.name, p.attributes) for p in person.followers])
-        }
-        data_string = json.dumps(relevant_data, sort_keys=True)
-        return hashlib.sha256(data_string.encode()).hexdigest()
-
-    def predict_type_person(self, person: PersonSchema, followers_db: list[str], following_db: list[str]) -> PersonPredict:
-        self.logger.debug(f"Predicting type of person with name: {person.name}")
-        followers  = []
-        following = []
-        if followers_db:
-            followers = self.person_repository_db.get_neighborhoods(names=followers_db, limit=2)
-            person.followers += [PersonBase.from_schema(person_schema=follower) for follower in followers]
-        if following_db:
-            following = self.person_repository_db.get_neighborhoods(names=following_db, limit=2)
-            person.following += [PersonBase.from_schema(person_schema=follow) for follow in following]
-        hash_person = self.__generate_hash_person(person=person)
-        person_predict = self.person_repository_cache.get_prediction(hash_person=hash_person)
-        if person_predict:
-                return person_predict
-        graph, names = GraphBuilder.create_graph(persons=[person] + followers + following, mask_persons=[person.name])
-        prediction = self.model.predict(data=graph, names=names)[0]
-        self.person_repository_cache.save_prediction(person_predict=prediction, hash_person=hash_person,
-                                                     expired_time=3600)
-        return prediction
 

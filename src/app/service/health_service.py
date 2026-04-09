@@ -32,7 +32,7 @@ class HealthService:
 
             except Exception as e:
                 raise Exception(f"Health check failed: {str(e)}")
-        if self.model_predictor is not None:
+        if self.model_predictor is not None and self.model_predictor.is_model_available():
             components.append(ComponentStatus(name="Model", status=StatusTypes.healthy))
         else:
             components.append(ComponentStatus(name="Model", status=StatusTypes.unhealthy))

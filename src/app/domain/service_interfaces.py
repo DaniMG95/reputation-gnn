@@ -22,6 +22,9 @@ class PersonServiceInterface(ABC):
     def list_people(self, offset: int = 0, limit: int = 20, type_person: TypePerson = None) -> list[PersonSchema]:
         pass
 
+
+class PredictServiceInterface(ABC):
+
     @abstractmethod
     def predict_type_person(self, person: PersonSchema, followers_db: list[str], following_db: list[str]
                             ) -> PersonPredict:
