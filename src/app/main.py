@@ -22,7 +22,7 @@ async def lifespan(app: FastAPI):
     Logger.setup_logging()
     logger = Logger(name="api")
     logger.info("Starting API application")
-    init_db_connection()
+    init_db_connection(url=settings.uri_neo4j)
     redis_connector = connector_redis()
     repository_people = repository_people_neo4j()
     app.state.redis = redis_connector

@@ -1,4 +1,5 @@
 services:
+
   neo4j:
     image: neo4j:2026.01.4
     restart: always
@@ -11,6 +12,13 @@ services:
       - neo4j_data:/data
     networks:
       - service_network
+    healthcheck:
+      test: [ "CMD-SHELL", "cypher-shell -u neo4j -p password 'RETURN 1' || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
   redis:
     image: redis:7.0.11
     restart: always
@@ -18,7 +26,56 @@ services:
       - "6379:6379"
     networks:
       - service_network
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 3s
+      retries: 10
 
+  api:
+    build:
+      context: .
+      dockerfile: deployment/Dockerfile-api
+    ports:
+      - "80:80"
+    env_file:
+      - .env
+    depends_on:
+      neo4j:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - service_network
+
+  ingest:
+    build:
+      context: .
+      dockerfile: deployment/Dockerfile-ingest
+    env_file:
+      - .env
+    depends_on:
+      neo4j:
+        condition: service_healthy
+    profiles: [ "jobs" ]
+    networks:
+      - service_network
+    restart: "no"
+
+  train:
+    build:
+      context: .
+      dockerfile: deployment/Dockerfile-training
+    env_file:
+      - .env
+    depends_on:
+      neo4j:
+        condition: service_healthy
+    profiles: [ "jobs" ]
+    networks:
+      - service_network
+    restart: "no"
 
 networks:
   service_network:

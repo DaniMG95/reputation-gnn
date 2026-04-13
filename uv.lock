@@ -951,29 +951,46 @@ name = "reputation-gnn"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
-    { name = "faker" },
-    { name = "fastapi" },
     { name = "neomodel" },
     { name = "pydantic-settings" },
+]
+
+[package.optional-dependencies]
+api = [
+    { name = "fastapi" },
     { name = "redis" },
     { name = "torch" },
     { name = "torch-geometric" },
-    { name = "tqdm" },
     { name = "uvicorn" },
+]
+ingest = [
+    { name = "faker" },
+    { name = "neomodel" },
+    { name = "tqdm" },
+]
+train = [
+    { name = "torch" },
+    { name = "torch-geometric" },
+    { name = "tqdm" },
 ]
 
 [package.metadata]
 requires-dist = [
-    { name = "faker", specifier = ">=40.5.1" },
-    { name = "fastapi", specifier = ">=0.135.1" },
+    { name = "faker", marker = "extra == 'ingest'", specifier = ">=40.5.1" },
+    { name = "fastapi", marker = "extra == 'api'", specifier = ">=0.135.1" },
     { name = "neomodel", specifier = ">=6.0.1" },
+    { name = "neomodel", marker = "extra == 'ingest'", specifier = ">=6.0.1" },
     { name = "pydantic-settings", specifier = ">=2.13.1" },
-    { name = "redis", specifier = ">=7.3.0" },
-    { name = "torch", specifier = ">=2.10.0" },
-    { name = "torch-geometric", specifier = ">=2.7.0" },
-    { name = "tqdm", specifier = ">=4.67.3" },
-    { name = "uvicorn", specifier = ">=0.42.0" },
+    { name = "redis", marker = "extra == 'api'", specifier = ">=7.3.0" },
+    { name = "torch", marker = "extra == 'api'", specifier = ">=2.10.0" },
+    { name = "torch", marker = "extra == 'train'", specifier = ">=2.10.0" },
+    { name = "torch-geometric", marker = "extra == 'api'", specifier = ">=2.7.0" },
+    { name = "torch-geometric", marker = "extra == 'train'", specifier = ">=2.7.0" },
+    { name = "tqdm", marker = "extra == 'ingest'", specifier = ">=4.67.3" },
+    { name = "tqdm", marker = "extra == 'train'", specifier = ">=4.67.3" },
+    { name = "uvicorn", marker = "extra == 'api'", specifier = ">=0.42.0" },
 ]
+provides-extras = ["api", "ingest", "train"]
 
 [[package]]
 name = "requests"

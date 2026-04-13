@@ -1,6 +1,7 @@
 from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
+    uri_neo4j: str
     mean_posts: int = 400
     max_posts_influencers: int = 1500
     mean_posts_bots: int = 15
@@ -13,6 +14,9 @@ class Settings(BaseSettings):
     deviation_bots_following_persons: float = 0.10
     percentage_bots_follow_bots: float = 0.9
     percentage_verified_person: float = 0.3
+    n_accounts: int = 100
+    p_bots: float = 0.3
+    p_influencers: float = 0.2
 
     class Config:
         env_file = ".env"

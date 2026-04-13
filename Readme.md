@@ -1,0 +1,1 @@
+docker build -t reputation-gnn-base:latest -f deployment/Dockerfile-base .

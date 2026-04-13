@@ -10,7 +10,7 @@ from brain.config import settings
 from brain.trainers.components.early_stopping import EarlyStopping
 
 Logger.setup_logging()
-init_db_connection()
+init_db_connection(url=settings.uri_neo4j)
 repository_people = RepositoryPeopleNeo4j(db=db)
 graph_data_loader = GraphDataLoader(repository_people=repository_people)
 

@@ -4,26 +4,20 @@ from neomodel import db
 from ingest.simulator.service_people import ServicePeople
 from common.db.connection import init_db_connection
 from common.logger import Logger
-import argparse
+from ingest.config import settings
 
 def main():
     Logger.setup_logging()
     logger_ingest = Logger(name="main")
 
-    parser = argparse.ArgumentParser(description='Ingest data into the graph database.')
-    parser.add_argument('--n_accounts', type=int, default=100, help='Number of accounts to create')
-    parser.add_argument('--p_bots', type=float, default=0.3, help='Percentage of bot accounts')
-    parser.add_argument('--p_influencers', type=float, default=0.2,
-                        help='Percentage of influencer accounts')
-    args = parser.parse_args()
-    init_db_connection()
+    init_db_connection(url=settings.uri_neo4j)
 
     repository_people=RepositoryPeopleNeo4j(db=db)
     service_people = ServicePeople(repository_people=repository_people)
 
 
-    simulator_ingest = SimulatorIngest(n_accounts=args.n_accounts, p_influencers=args.p_influencers, p_bots=args.p_bots,
-                                       service_people=service_people)
+    simulator_ingest = SimulatorIngest(n_accounts=settings.n_accounts, p_influencers=settings.p_influencers,
+                                       p_bots=settings.p_bots, service_people=service_people)
 
     logger_ingest.info("Starting the ingestion process")
     simulator_ingest.ingest()

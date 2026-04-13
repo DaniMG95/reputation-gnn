@@ -3,6 +3,7 @@ from brain.trainers.factory import TypeModelTrainer
 from brain.architectures.factory import TypeModel
 
 class Settings(BaseSettings):
+    uri_neo4j: str
     model_name: TypeModel = TypeModel.GCN
     model_path: str = "bot_detector_gcn.pth"
     hidden_channels: int  = 32
