@@ -37,7 +37,6 @@ class HealthService:
         else:
             components.append(ComponentStatus(name="Model", status=StatusTypes.unhealthy))
             self.logger.warning(f"Dependency Model is unhealthy.")
-            is_healthy = False
 
         if not is_healthy:
             status = StatusTypes.unhealthy

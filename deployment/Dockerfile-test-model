@@ -29,4 +29,4 @@ COPY --from=builder /app/src /app/src
 RUN chown -R appuser:appuser /app
 USER appuser
 
-CMD ["train-model"]
+CMD ["test-model"]

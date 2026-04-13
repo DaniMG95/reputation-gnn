@@ -63,10 +63,24 @@ services:
       - service_network
     restart: "no"
 
-  train:
+  train-model:
     build:
       context: .
       dockerfile: deployment/Dockerfile-training
+    env_file:
+      - .env
+    depends_on:
+      neo4j:
+        condition: service_healthy
+    profiles: [ "jobs" ]
+    networks:
+      - service_network
+    restart: "no"
+
+  test-model:
+    build:
+      context: .
+      dockerfile: deployment/Dockerfile-test-model
     env_file:
       - .env
     depends_on:
