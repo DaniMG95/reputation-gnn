@@ -36,7 +36,6 @@ class ModelPredictor:
             cls.logger.error(f"Failed to load model artifact from {artifact_dir}. Model will not be available "
                               f"for predictions.")
             return cls(model=None, is_available=False)
-
         return cls(model=model, is_available=True)
 
 

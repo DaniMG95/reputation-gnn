@@ -12,7 +12,8 @@ async def health_check(request: Request):
     logger.info("Received health check request")
     redis_client = request.app.state.redis
     repository_people: RepositoryPeopleInterface = request.app.state.repository_people_redis
-    model_predictor = getattr(request.app.state, "model", None)
+    predict_service  = getattr(request.app.state, "predict_service", None)
+    model_predictor = predict_service.model if predict_service else None
 
     health_service = HealthService(repository_people=repository_people, cache_connector=redis_client,
                                    model_predictor=model_predictor)
