@@ -2,12 +2,12 @@ import torch.nn.functional as F
 from torch_geometric.nn import GCNConv
 from torch.nn import BatchNorm1d
 from torch_geometric.data import Data
-from brain.architectures.interfaces import ModelBotDetectorInterface
+from core.ml.models.interfaces import ModelInterface
 
 
-class BotDetectorGCN(ModelBotDetectorInterface):
+class Gcn(ModelInterface):
     def __init__(self, in_channels: int, hidden_channels: int, out_channels: int):
-        super(BotDetectorGCN, self).__init__()
+        super(Gcn, self).__init__()
         self.conv1 = GCNConv(in_channels, hidden_channels)
         self.bn1 = BatchNorm1d(hidden_channels)
         self.conv2 = GCNConv(hidden_channels, out_channels)

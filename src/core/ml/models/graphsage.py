@@ -2,12 +2,12 @@ import torch.nn.functional as F
 from torch.nn import BatchNorm1d
 from torch_geometric.nn import SAGEConv, GATConv
 from torch_geometric.data import Data
-from brain.architectures.interfaces import ModelBotDetectorInterface
+from core.ml.models.interfaces import ModelInterface
 
 
-class BotDetectorGnnSage(ModelBotDetectorInterface):
+class GraphSage(ModelInterface):
     def __init__(self, in_channels: int, hidden_channels: int, out_channels: int):
-        super(BotDetectorGnnSage, self).__init__()
+        super(GraphSage, self).__init__()
         self.conv1 = SAGEConv(in_channels, hidden_channels)
         self.bn1 = BatchNorm1d(hidden_channels)
         self.conv2 = GATConv(hidden_channels, out_channels)

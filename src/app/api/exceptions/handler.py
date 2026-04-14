@@ -2,7 +2,7 @@ import time
 from fastapi import Request
 from fastapi.responses import JSONResponse
 from app.api.exceptions.custom_exceptions import AppBaseException
-from common.logger import Logger
+from core.observability.logger import Logger
 
 logger = Logger(name="app.api.exceptions.handler")
 

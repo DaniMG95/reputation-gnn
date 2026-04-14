@@ -1,10 +1,10 @@
 from app.domain.service_interfaces import PersonServiceInterface
 from app.domain.repository_interfaces import PersonRepositoryCacheInterface
-from common.db.interfaces import RepositoryPeopleInterface
-from common.schemas.person import PersonSchema, TypePerson
+from core.persistence.interfaces.repository_interfaces import RepositoryPeopleInterface
+from core.domain import PersonWithRelations, TypePerson
 from app.api.exceptions.custom_exceptions import PersonNotFoundError, PersonAlreadyExistsError, \
     InvalidPaginationParametersError
-from common.logger import Logger
+from core.observability.logger import Logger
 
 
 class PersonService(PersonServiceInterface):
@@ -28,7 +28,7 @@ class PersonService(PersonServiceInterface):
                 return None
         return person
 
-    def save_person(self, person: PersonSchema, followers_db: list[str] = None, following_db: list[str] = None):
+    def save_person(self, person: PersonWithRelations, followers_db: list[str] = None, following_db: list[str] = None):
         self.logger.debug(f"Saving person with name: {person.name}")
         person_db = self.get_person(person_name=person.name)
         if person_db:
@@ -47,7 +47,7 @@ class PersonService(PersonServiceInterface):
         self.person_repository_db.delete_person(name=person_name)
         self.person_repository_cache.delete_person(person_name=person_name)
 
-    def update_person(self, person: PersonSchema, followers_db: list[str] = None, following_db: list[str] = None):
+    def update_person(self, person: PersonWithRelations, followers_db: list[str] = None, following_db: list[str] = None):
         self.logger.debug(f"Updating person with name: {person.name}")
         person_db = self.get_person(person_name=person.name)
         if not person_db:
@@ -57,7 +57,7 @@ class PersonService(PersonServiceInterface):
         self.person_repository_db.update_relationships(person=person, followers=followers_db, following=following_db)
         self.person_repository_cache.delete_person(person_name=person.name)
 
-    def list_people(self, offset: int = 0, limit: int = 20, type_person: TypePerson = None) -> list[PersonSchema]:
+    def list_people(self, offset: int = 0, limit: int = 20, type_person: TypePerson = None) -> list[PersonWithRelations]:
         self.logger.debug(f"Listing people with offset: {offset}, limit: {limit}, type_person: {type_person}")
         if offset < 0 or limit <= 0:
             self.logger.debug(f"Invalid pagination parameters: offset={offset}, limit={limit}.")

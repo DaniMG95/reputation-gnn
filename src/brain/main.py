@@ -1,16 +1,18 @@
-from common.db.connection import init_db_connection
-from common.db.repository_people_neo4j import RepositoryPeopleNeo4j
+from core.persistence.neo4j.connection import init_db_connection
+from core.persistence.neo4j.repositories.repository_people_neo4j import RepositoryPeopleNeo4j
 from brain.data.graph_loader import GraphDataLoader
 from neomodel import db
 from brain.trainers.factory import ModelTrainerFactory
-from brain.predictor import ModelPredictor
-from brain.architectures.factory import ModelFactory
-from common.logger import Logger
+from core.ml.inference.predictor import ModelPredictor
+from core.ml.models.factory import ModelFactory
+from core.observability.logger import Logger
 from brain.config import settings
 from brain.trainers.components.early_stopping import EarlyStopping
+from core.ml.evaluators.model_evaluator import ModelEvaluator
+from core.ml.serialization.model_artifact import ModelArtifact, ModelArtifactMetadata
 
-Logger.setup_logging()
-init_db_connection(url=settings.uri_neo4j)
+Logger.setup_logging(app_name=settings.app_logger.app_name)
+init_db_connection(url=settings.neo4j.uri_neo4j)
 repository_people = RepositoryPeopleNeo4j(db=db)
 graph_data_loader = GraphDataLoader(repository_people=repository_people)
 
@@ -23,8 +25,10 @@ def train():
     training_graph, validation_graph, test_graph = graph_data_loader.split_graph_train_val_test(
         ratio_validation=settings.ratio_validation, ratio_test=settings.ratio_test)
 
-    bot_model = ModelFactory.create_model(model_name=settings.model_name,in_channels=training_graph.num_features,
-                                          hidden_channels=settings.hidden_channels, out_channels=2)
+    model_metadata = ModelArtifactMetadata(model_name=settings.model_name, input_dim=settings.num_features,
+                                           hidden_dim=settings.hidden_channels, output_dim=settings.output_channels)
+    bot_model = ModelFactory.create_from_metadata(metadata=model_metadata)
+
     early_stopping = EarlyStopping(patience=settings.early_stopping_patience,
                                    min_delta=settings.early_stopping_delta)
     logger.info(f"Creating model trainer of type {settings.type_trainer} with early stopping "
@@ -40,9 +44,10 @@ def train():
     logger.info("Training the model...")
     model_trainer.train(train_data=train_data, validation_data=val_data)
     logger.info("Saving the model...")
-    model_trainer.save_model(settings.model_path)
+    ModelArtifact.save(metadata=model_metadata, model=model_trainer.model, artifact_dir=settings.model_path)
 
-    acc = model_trainer.eval_predict(data=test_graph)
+    model_evaluator = ModelEvaluator(model=model_trainer.model)
+    acc = model_evaluator.evaluate(data=test_graph)
 
     logger.info(f"Test Accuracy: {acc*100:.2f}%")
 
@@ -56,13 +61,11 @@ def test():
     logger.info(f"Loading graph data by test {settings.n_nodes_test} nodes...")
     test_graph, _ = graph_data_loader.create_subgraph_by_persons(names=names_randoms, mask_predict=True, normalise=True)
 
-    bot_model = ModelFactory.create_model(model_name=settings.model_name, in_channels=test_graph.num_features,
-                                          hidden_channels=settings.hidden_channels, out_channels=2)
     logger.info("Loading the model...")
-    model_predictor = ModelPredictor(model=bot_model, model_path=settings.model_path)
+    model_predictor = ModelPredictor.from_artifact_dir(artifact_dir=settings.model_path)
 
-
-    acc = model_predictor.eval_predict(data=test_graph)
+    model_evaluator = ModelEvaluator(model=model_predictor.model)
+    acc = model_evaluator.evaluate(data=test_graph)
 
     logger.info(f"Test Accuracy: {acc*100:.2f}%")
 

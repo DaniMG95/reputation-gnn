@@ -22,7 +22,10 @@ class RedisConnector:
         self.redis_client.close()
 
     def ping(self) -> bool:
-        return self.redis_client.ping()
+        try:
+            return self.redis_client.ping()
+        except Exception:
+            return False
 
     @property
     def name(self) -> str:

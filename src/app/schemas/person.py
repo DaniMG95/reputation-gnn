@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from pydantic.fields import Field
-from common.schemas.person import PersonSchema, TypePerson, PersonBase
+from core.domain import PersonWithRelations, TypePerson, Person
 
 
 class PersonPredict(BaseModel):
@@ -9,7 +9,7 @@ class PersonPredict(BaseModel):
     confidence: float
 
 
-class PredictRequestPerson(BaseModel, PersonSchema):
+class PredictRequestPerson(BaseModel, PersonWithRelations):
     followers_db: list[str] = Field(default_factory=list)
     following_db: list[str] = Field(default_factory=list)
 
@@ -37,7 +37,7 @@ class PersonResponseBase(BaseModel):
     verified: bool
 
     @classmethod
-    def from_person_schema(cls, person: PersonBase) -> "PersonResponseBase":
+    def from_person_schema(cls, person: Person) -> "PersonResponseBase":
         return cls(
             name=person.name,
             user_type=person.user_type,
@@ -53,7 +53,7 @@ class PersonResponse(PersonResponseBase):
     following: list["PersonResponseBase"] = Field(default_factory=list)
 
     @classmethod
-    def from_person_schema(cls, person: PersonSchema) -> "PersonResponse":
+    def from_person_schema(cls, person: PersonWithRelations) -> "PersonResponse":
         return cls(
             name=person.name,
             user_type=person.user_type,

@@ -1,7 +1,7 @@
 from logging import config, getLogger, INFO
 
 class Logger:
-    APP_NAME = "ingest"
+    APP_NAME = ""
 
     def __init__(self, name: str):
         self.logger = getLogger(self.APP_NAME + '.' + name)
@@ -19,7 +19,8 @@ class Logger:
         self.logger.error(*args, **kwargs)
 
     @classmethod
-    def setup_logging(cls, default_level=INFO):
+    def setup_logging(cls, app_name: str, default_level=INFO):
+        cls.APP_NAME = app_name
         logging_config = {
             'version': 1,
             'disable_existing_loggers': False,

@@ -1,16 +1,16 @@
 from ingest.simulator.simulator_ingest import SimulatorIngest
-from common.db.repository_people_neo4j import RepositoryPeopleNeo4j
+from core.persistence.neo4j.repositories.repository_people_neo4j import RepositoryPeopleNeo4j
 from neomodel import db
 from ingest.simulator.service_people import ServicePeople
-from common.db.connection import init_db_connection
-from common.logger import Logger
+from core.persistence.neo4j.connection import init_db_connection
+from core.observability.logger import Logger
 from ingest.config import settings
 
 def main():
-    Logger.setup_logging()
+    Logger.setup_logging(app_name=settings.app_logger.app_name)
     logger_ingest = Logger(name="main")
 
-    init_db_connection(url=settings.uri_neo4j)
+    init_db_connection(url=settings.neo4j.uri_neo4j)
 
     repository_people=RepositoryPeopleNeo4j(db=db)
     service_people = ServicePeople(repository_people=repository_people)

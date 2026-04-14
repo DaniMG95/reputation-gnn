@@ -1,0 +1,1 @@
+from core.domain.enums.type_person import TypePerson

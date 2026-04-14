@@ -1,12 +1,12 @@
-from brain.architectures.interfaces import ModelBotDetectorInterface
+from core.ml.models import ModelInterface
 import torch
 from torch_geometric.data import Data
-from common.graph_builder import GraphBuilder
+from core.graph.builders.graph_builder import GraphBuilder
 
 
-class ModelBase:
+class ModelEvaluator:
 
-    def __init__(self, model: ModelBotDetectorInterface):
+    def __init__(self, model: ModelInterface):
         self.model = model
 
     @staticmethod
@@ -16,7 +16,7 @@ class ModelBase:
         return correct / int(labels.size(0))
 
     @torch.no_grad()
-    def eval_predict(self, data: Data) -> float:
+    def evaluate(self, data: Data) -> float:
         self.model.eval()
         mask = GraphBuilder.get_mask(data=data)
 

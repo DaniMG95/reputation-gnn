@@ -1,8 +1,8 @@
-from common.db.interfaces import RepositoryPeopleInterface
+from core.persistence.interfaces.repository_interfaces import RepositoryPeopleInterface
 from torch_geometric.data import Data
-from common.graph_builder import GraphBuilder
+from core.graph.builders.graph_builder import GraphBuilder
 import random
-from common.logger import Logger
+from core.observability.logger import Logger
 from brain.trainers.factory import TypeModelTrainer
 from brain.data.neighbor_loader import NeighborDataLoader
 from torch_geometric.loader import NeighborLoader

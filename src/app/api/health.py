@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Request, HTTPException
-from common.db.interfaces import RepositoryPeopleInterface
+from core.persistence.interfaces.repository_interfaces import RepositoryPeopleInterface
 from app.service.health_service import HealthService
 from app.schemas.health import HealthCheckResponse, StatusTypes
-from common.logger import Logger
+from core.observability.logger import Logger
 
 api_router = APIRouter(prefix="/health", tags=["health"])
 logger = Logger("HealthAPI")

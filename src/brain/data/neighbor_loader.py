@@ -1,6 +1,6 @@
 from torch_geometric.data import Data
 from torch_geometric.loader import NeighborLoader
-from common.graph_builder import GraphBuilder
+from core.graph.builders.graph_builder import GraphBuilder
 
 
 class NeighborDataLoader:

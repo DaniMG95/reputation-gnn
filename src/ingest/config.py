@@ -1,7 +1,12 @@
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
+from core.settings.neo4j import Neo4jSettings
+from core.settings.logger import AppLoggerSettings
+from pydantic import Field
 
 class Settings(BaseSettings):
-    uri_neo4j: str
+    model_config = SettingsConfigDict(env_prefix="INGEST_", env_file='.env', env_file_encoding='utf-8',
+                                      case_sensitive=False, extra='ignore')
+
     mean_posts: int = 400
     max_posts_influencers: int = 1500
     mean_posts_bots: int = 15
@@ -17,11 +22,7 @@ class Settings(BaseSettings):
     n_accounts: int = 100
     p_bots: float = 0.3
     p_influencers: float = 0.2
-
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
-        case_sensitive = False
-        extra = 'ignore'
+    neo4j: Neo4jSettings = Field(default_factory=Neo4jSettings)
+    app_logger: AppLoggerSettings = Field(default_factory=AppLoggerSettings)
 
 settings = Settings()

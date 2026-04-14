@@ -1,5 +1,5 @@
 import random
-from common.schemas.person import PersonSchema, TypePerson
+from core.domain import PersonWithRelations, TypePerson
 from ingest.simulator.generator import GeneratorInterface
 
 
@@ -19,12 +19,13 @@ class GeneratorPeople:
     def __iter__(self):
         return self
 
-    def __next__(self) -> PersonSchema:
+    def __next__(self) -> PersonWithRelations:
         if self.index >= self.n_people:
             raise StopIteration
         posts = random.randint(self.range_posts[0], self.range_posts[1])
         self.index += 1
-        return PersonSchema(name=self.generator.name, posts=posts, n_followers=self.n_followers,
-                            n_following=self.n_following, user_type=self.type_person, verified=self.generator.verified)
+        return PersonWithRelations(name=self.generator.name, posts=posts, n_followers=self.n_followers,
+                                   n_following=self.n_following, user_type=self.type_person,
+                                   verified=self.generator.verified)
 
 

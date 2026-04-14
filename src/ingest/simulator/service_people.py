@@ -1,9 +1,9 @@
-from common.db.interfaces import RepositoryPeopleInterface
-from common.schemas.person import PersonSchema, TypePerson
+from core.persistence.interfaces.repository_interfaces import RepositoryPeopleInterface
+from core.domain import PersonWithRelations, TypePerson
 from ingest.simulator.generator_person import GeneratorPeople
 from ingest.simulator.generator import GeneratorFactory
 import random
-from common.logger import Logger
+from core.observability.logger import Logger
 from tqdm import tqdm
 
 
@@ -12,7 +12,7 @@ class ServicePeople:
         self.repository_people = repository_people
         self.logger = Logger(name="service_people")
 
-    def create_relationships(self, person: PersonSchema, followers: list[str] = None,
+    def create_relationships(self, person: PersonWithRelations, followers: list[str] = None,
                              following: list[str] = None):
         self.repository_people.create_relationships(person=person, followers=followers, following=following)
 

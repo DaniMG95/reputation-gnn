@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
-from common.schemas.person import PersonSchema, TypePerson
+from core.domain.entities.person import PersonWithRelations
+from core.domain.enums.type_person import TypePerson
 
 
 class RepositoryPeopleInterface(ABC):
@@ -14,33 +15,33 @@ class RepositoryPeopleInterface(ABC):
         pass
 
     @abstractmethod
-    def create_person(self, person: PersonSchema):
+    def create_person(self, person: PersonWithRelations):
         pass
 
     @abstractmethod
-    def create_relationships(self, person: PersonSchema, followers: list[str] = None,
+    def create_relationships(self, person: PersonWithRelations, followers: list[str] = None,
                              following: list[str] = None):
         pass
 
     @abstractmethod
-    def update_relationships(self, person: PersonSchema, followers: list[str] = None,
+    def update_relationships(self, person: PersonWithRelations, followers: list[str] = None,
                              following: list[str] = None):
         pass
 
     @abstractmethod
-    def get_person(self, name: str) -> PersonSchema:
+    def get_person(self, name: str) -> PersonWithRelations:
         pass
 
     @abstractmethod
-    def get_persons_by_type(self, user_type: TypePerson) -> list[PersonSchema]:
+    def get_persons_by_type(self, user_type: TypePerson) -> list[PersonWithRelations]:
         pass
 
     @abstractmethod
-    def get_all_persons(self) -> list[PersonSchema]:
+    def get_all_persons(self) -> list[PersonWithRelations]:
         pass
 
     @abstractmethod
-    def update_person(self, person: PersonSchema):
+    def update_person(self, person: PersonWithRelations):
         pass
 
     @abstractmethod
@@ -48,15 +49,15 @@ class RepositoryPeopleInterface(ABC):
         pass
 
     @abstractmethod
-    def get_persons_by_names(self, names: list[str]) -> list[PersonSchema]:
+    def get_persons_by_names(self, names: list[str]) -> list[PersonWithRelations]:
         pass
 
     @abstractmethod
-    def get_neighborhoods(self, names: list[str], limit: int = 50) -> list[PersonSchema]:
+    def get_neighborhoods(self, names: list[str], limit: int = 50) -> list[PersonWithRelations]:
         pass
 
     @abstractmethod
-    def get_random_nodes(self, n: int) -> list[PersonSchema]:
+    def get_random_nodes(self, n: int) -> list[PersonWithRelations]:
         pass
 
     @abstractmethod
@@ -65,7 +66,7 @@ class RepositoryPeopleInterface(ABC):
 
     @abstractmethod
     def get_persons_by_pagination(self, skip: int = 0, limit: int = 10, type_person: TypePerson = None
-                                  ) -> list[PersonSchema]:
+                                  ) -> list[PersonWithRelations]:
         pass
 
     @abstractmethod

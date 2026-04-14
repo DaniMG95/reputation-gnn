@@ -1,14 +1,14 @@
 from abc import ABC, abstractmethod
-from common.schemas.person import PersonSchema, PersonPredict
+from core.domain import PersonWithRelations, PersonPredict
 
 
 class PersonRepositoryCacheInterface(ABC):
     @abstractmethod
-    def get_person(self, person_name: str) -> PersonSchema:
+    def get_person(self, person_name: str) -> PersonWithRelations:
         pass
 
     @abstractmethod
-    def save_person(self, person: PersonSchema, expired_time: int):
+    def save_person(self, person: PersonWithRelations, expired_time: int):
         pass
 
     @abstractmethod

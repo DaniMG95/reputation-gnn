@@ -1,13 +1,13 @@
 from app.domain.repository_interfaces import PersonRepositoryCacheInterface
-from common.db.interfaces import RepositoryPeopleInterface
-from brain.architectures.interfaces import ModelBotDetectorInterface
+from core.persistence.interfaces.repository_interfaces import RepositoryPeopleInterface
+from core.ml.models.interfaces import ModelInterface
 from app.schemas.health import HealthCheckResponse, StatusTypes, ComponentStatus
-from common.logger import Logger
+from core.observability.logger import Logger
 
 
 class HealthService:
     def __init__(self, repository_people: RepositoryPeopleInterface, cache_connector: PersonRepositoryCacheInterface,
-                 model_predictor: ModelBotDetectorInterface):
+                 model_predictor: ModelInterface):
         self.repository_people = repository_people
         self.cache_connector = cache_connector
         self.model_predictor = model_predictor

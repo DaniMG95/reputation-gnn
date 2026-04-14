@@ -1,4 +1,6 @@
-from common.schemas.person import PersonSchema
+from core.domain.entities.person import Person, PersonWithRelations
+from core.graph.features.person_feature_extractor import PersonFeatureExtractor
+from core.ml.encoders.person_label_encoder import PersonLabelEncoder
 import torch
 from torch_geometric.data import Data
 from dataclasses import dataclass
@@ -14,19 +16,20 @@ class Node:
 class GraphBuilder:
 
     @staticmethod
-    def _create_node_mapping(persons: list[PersonSchema]) -> dict[str, Node]:
+    def _create_node_mapping(persons: list[Person]) -> dict[str, Node]:
         idx = 0
         node_mapping = {}
         for person in persons:
             if person.name not in node_mapping:
-                node = Node(name=person.name, idx=idx, attributes=person.attributes)
+                attributes_person = PersonFeatureExtractor.extract(person=person)
+                node = Node(name=person.name, idx=idx, attributes=attributes_person)
                 node_mapping[person.name] = node
                 idx += 1
         return node_mapping
 
 
     @classmethod
-    def create_graph(cls, persons: list[PersonSchema], mask_persons: list[str] = None, normalise: bool = False
+    def create_graph(cls, persons: list[PersonWithRelations], mask_persons: list[str] = None, normalise: bool = False
                      ) -> tuple[Data, list[str]]:
         node_mapping = cls._create_node_mapping(persons=persons)
         type_person_list = []
@@ -38,7 +41,7 @@ class GraphBuilder:
 
         for person in persons:
             node: Node = node_mapping[person.name]
-            type_person_list.append(person.user_type_int)
+            type_person_list.append(PersonLabelEncoder.encode(user_type=person.user_type))
             attributes_list.append(node.attributes)
             names.append(node.name)
             if mask_persons is not None and person.name in mask_persons:

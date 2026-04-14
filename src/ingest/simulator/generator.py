@@ -1,6 +1,6 @@
 from faker import Faker
 import random
-from common.schemas.person import TypePerson
+from core.domain import TypePerson
 from abc import ABC, abstractmethod
 
 

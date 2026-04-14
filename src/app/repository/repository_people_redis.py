@@ -1,8 +1,8 @@
 from app.domain.repository_interfaces import PersonRepositoryCacheInterface
 from app.connectors.redis_conector import RedisConnector
-from common.schemas.person import PersonSchema, PersonPredict
+from core.domain import PersonWithRelations, PersonPredict
 from pydantic import TypeAdapter
-from common.logger import Logger
+from core.observability.logger import Logger
 
 class PersonRepositoryRedis(PersonRepositoryCacheInterface):
     PREFIX = "person:"
@@ -12,17 +12,17 @@ class PersonRepositoryRedis(PersonRepositoryCacheInterface):
         self.redis_client = redis_client
         self.logger = Logger(self.__class__.__name__)
 
-    def get_person(self, person_name: str) -> PersonSchema | None:
+    def get_person(self, person_name: str) -> PersonWithRelations | None:
         self.logger.debug(f"Attempting to retrieve person '{person_name}' from Redis cache.")
         person_data = self.redis_client.get(f"{self.PREFIX}{person_name}")
         if person_data:
-            return PersonSchema(**person_data)
+            return PersonWithRelations(**person_data)
         return None
 
-    def save_person(self, person: PersonSchema, expired_time: int = 3600):
+    def save_person(self, person: PersonWithRelations, expired_time: int = 3600):
         self.logger.debug(f"Saving person '{person.name}' to Redis cache with expiration time of "
                           f"{expired_time} seconds.")
-        adapter = TypeAdapter(PersonSchema)
+        adapter = TypeAdapter(PersonWithRelations)
         person_data = adapter.dump_json(person)
         key = f"{self.PREFIX}{person.name}"
         self.redis_client.set(key=key, value=person_data)

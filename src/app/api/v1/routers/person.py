@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Request, HTTPException
 from app.schemas.person import PersonResponse, PaginationPersonResponse, CreatePersonRequest, UpdatePersonRequest
-from common.schemas.person import PersonSchema, TypePerson
+from core.domain import PersonWithRelations, TypePerson
 from app.service.person_service import PersonService
-from common.logger import Logger
+from core.observability.logger import Logger
 
 api_router = APIRouter(prefix="/person", tags=["person"])
 logger = Logger("PersonAPI")
@@ -12,7 +12,7 @@ logger = Logger("PersonAPI")
 async def create_person(request: Request, person_request: CreatePersonRequest):
     logger.info(f"Received request to create person: {person_request.name}")
     person_service: PersonService = request.app.state.person_service
-    person = PersonSchema(name=person_request.name, user_type=person_request.user_type, posts=person_request.posts,
+    person = PersonWithRelations(name=person_request.name, user_type=person_request.user_type, posts=person_request.posts,
                           n_followers=0, n_following=0, verified=person_request.verified)
     person_service.save_person(person=person, followers_db=person_request.followers,
                                following_db=person_request.following)
@@ -23,7 +23,7 @@ async def create_person(request: Request, person_request: CreatePersonRequest):
 async def update_person(name: str, request: Request, person_request: UpdatePersonRequest):
     logger.info(f"Received request to update person: {name}")
     person_service: PersonService = request.app.state.person_service
-    person = PersonSchema(name=name, user_type=person_request.user_type, posts=person_request.posts,
+    person = PersonWithRelations(name=name, user_type=person_request.user_type, posts=person_request.posts,
                           n_followers=0, n_following=0, verified=person_request.verified)
     try:
         person_service.update_person(person=person, followers_db=person_request.followers,

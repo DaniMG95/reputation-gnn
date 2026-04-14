@@ -1,18 +1,17 @@
 from abc import ABC, abstractmethod
-from brain.architectures.interfaces import ModelBotDetectorInterface
-from brain.trainers.model_base import ModelBase
+from core.ml.models.interfaces import ModelInterface
 import torch
 from torch_geometric.data import Data
-from common.graph_builder import GraphBuilder
+from core.graph.builders.graph_builder import GraphBuilder
 from torch_geometric.loader import NeighborLoader
 from brain.trainers.components.early_stopping import EarlyStopping
 
 
-class ModelTrainInterface(ABC, ModelBase):
+class ModelTrainInterface(ABC):
 
-    def __init__(self, model: ModelBotDetectorInterface, epochs: int = 200, lr: float = 0.01,
+    def __init__(self, model: ModelInterface, epochs: int = 200, lr: float = 0.01,
                  weights: list[float] = None, early_stopping: EarlyStopping = None):
-        super().__init__(model=model)
+        self.model = model
         self.epochs = epochs
         self.lr = lr
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.lr, weight_decay=5e-4)

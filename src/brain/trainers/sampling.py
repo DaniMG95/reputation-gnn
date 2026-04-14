@@ -1,6 +1,5 @@
 from brain.trainers.interface import ModelTrainInterface
 from torch_geometric.loader import NeighborLoader
-from common.graph_builder import GraphBuilder
 import torch
 from tqdm import tqdm
 
@@ -27,20 +26,6 @@ class Sampling(ModelTrainInterface):
             pbar.update(1)
             pbar.set_postfix({'loss': f'{avg_loss:.4f}', 'acc_val': f'{val_loss:.4f}' if val_loss is not None else 'N/A'})
 
-    @torch.no_grad()
-    def eval_predict_sampling(self, loader: NeighborLoader) -> float:
-        self.model.eval()
-        total_correct = 0
-
-        for batch in loader:
-            prediction = self.model(batch)
-            mask = GraphBuilder.get_mask(data=batch)
-            target = batch.y[mask]
-            out = prediction[mask]
-
-            total_correct += self.calculate_accuracy(out=out, labels=target)
-
-        return total_correct / len(loader)
 
     @torch.no_grad()
     def val_loss_sampling(self, loader: NeighborLoader) -> float:

@@ -9,6 +9,7 @@ ENV UV_COMPILE_BYTECODE=1 \
 COPY pyproject.toml uv.lock ./
 
 RUN --mount=type=cache,target=/root/.cache/uv uv sync --extra train --frozen --no-dev --no-editable
+RUN uv pip install pyg-lib -f https://data.pyg.org/whl/torch-2.10.0+cpu.html
 
 COPY src/ ./src
 

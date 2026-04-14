@@ -1,5 +1,5 @@
 from ingest.simulator.service_people import ServicePeople
-from common.logger import Logger
+from core.observability.logger import Logger
 from ingest.config import settings
 
 class SimulatorIngest:
