@@ -26,7 +26,7 @@ RUN useradd -m -r appuser
 COPY --from=builder /app/.venv /app/.venv
 COPY --from=builder /app/src /app/src
 
-RUN chown -R appuser:appuser /app
+RUN mkdir -p /artifacts && chown -R appuser:appuser /app /artifacts
 USER appuser
 
 CMD ["test-model"]
