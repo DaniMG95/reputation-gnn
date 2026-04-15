@@ -38,13 +38,20 @@ services:
       dockerfile: deployment/Dockerfile-api
     ports:
       - "80:80"
-    env_file:
-      - .env
+    environment:
+      - URI_NEO4J=bolt://neo4j:password@neo4j:7687
+      - APP_HOST_REDIS=redis
+      - APP_PORT_REDIS=6379
+      - APP_DB_REDIS=0
+      - APP_MODEL_PATH=/artifacts
+      - APP_NAME=bot_detector
     depends_on:
       neo4j:
         condition: service_healthy
       redis:
         condition: service_healthy
+    volumes:
+      - model_artifacts:/artifacts:ro
     restart: unless-stopped
     networks:
       - service_network
@@ -53,8 +60,24 @@ services:
     build:
       context: .
       dockerfile: deployment/Dockerfile-ingest
-    env_file:
-      - .env
+    environment:
+      - INGEST_MEAN_POSTS=400
+      - INGEST_MAX_POSTS_INFLUENCERS=1500
+      - INGEST_MEAN_POSTS_BOTS=15
+      - INGEST_PERCENTAGE_FOLLOWERS_INFLUENCERS=0.85
+      - INGEST_PERCENTAGE_VERIFIED_PERSON=0.3
+      - INGEST_DEVIATION_FOLLOWERS_INFLUENCERS=0.05
+      - INGEST_PERCENTAGE_FOLLOWERS_PERSON=0.05
+      - INGEST_PERCENTAGE_PERSONS_FOLLOW_TO_BOTS=0.2
+      - INGEST_PERCENTAGE_FOLLOW_TO_BOTS=0.05
+      - INGEST_PERCENTAGE_BOTS_FOLLOWING_PERSONS=0.80
+      - INGEST_DEVIATION_BOTS_FOLLOWING_PERSONS=0.10
+      - INGEST_PERCENTAGE_BOTS_FOLLOW_BOTS=0.95
+      - INGEST_N_ACCOUNTS=100
+      - INGEST_P_BOTS=0.3
+      - INGEST_P_INFLUENCERS=0.2
+      - APP_NAME=bot_detector
+      - URI_NEO4J=bolt://neo4j:password@neo4j:7687
     depends_on:
       neo4j:
         condition: service_healthy
@@ -67,12 +90,29 @@ services:
     build:
       context: .
       dockerfile: deployment/Dockerfile-training
-    env_file:
-      - .env
+    environment:
+      - BRAIN_MODEL_NAME=sage
+      - BRAIN_MODEL_PATH=/artifacts
+      - BRAIN_HIDDEN_CHANNELS=32
+      - BRAIN_NUM_FEATURES=4
+      - BRAIN_OUT_CHANNELS=2
+      - BRAIN_EPOCHS=400
+      - BRAIN_LEARNING_RATE=0.01
+      - BRAIN_RATIO_VALIDATION=0.2
+      - BRAIN_RATIO_TEST=0.1
+      - BRAIN_NUM_NEIGHBORS="[25, 15]"
+      - BRAIN_BATCH_SIZE=128
+      - BRAIN_TYPE_TRAINER=sampling
+      - BRAIN_EARLY_STOPPING_PATIENCE=10
+      - BRAIN_EARLY_STOPPING_DELTA=0.001
+      - APP_NAME=bot_detector
+      - URI_NEO4J=bolt://neo4j:password@neo4j:7687
     depends_on:
       neo4j:
         condition: service_healthy
     profiles: [ "jobs" ]
+    volumes:
+      - model_artifacts:/artifacts
     networks:
       - service_network
     restart: "no"
@@ -81,14 +121,19 @@ services:
     build:
       context: .
       dockerfile: deployment/Dockerfile-test-model
-    env_file:
-      - .env
+    environment:
+      - BRAIN_MODEL_PATH=/artifacts
+      - BRAIN_N_NODES_TEST=10
+      - APP_NAME=bot_detector
+      - URI_NEO4J=bolt://neo4j:password@neo4j:7687
     depends_on:
       neo4j:
         condition: service_healthy
     profiles: [ "jobs" ]
     networks:
       - service_network
+    volumes:
+      - model_artifacts:/artifacts:ro
     restart: "no"
 
 networks:
@@ -97,3 +142,4 @@ networks:
 
 volumes:
     neo4j_data:
+    model_artifacts:

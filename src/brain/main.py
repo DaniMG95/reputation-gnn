@@ -6,18 +6,20 @@ from brain.trainers.factory import ModelTrainerFactory
 from core.ml.inference.predictor import ModelPredictor
 from core.ml.models.factory import ModelFactory
 from core.observability.logger import Logger
-from brain.config import settings
 from brain.trainers.components.early_stopping import EarlyStopping
 from core.ml.evaluators.model_evaluator import ModelEvaluator
 from core.ml.serialization.model_artifact import ModelArtifact, ModelArtifactMetadata
 
-Logger.setup_logging(app_name=settings.app_logger.app_name)
-init_db_connection(url=settings.neo4j.uri_neo4j)
-repository_people = RepositoryPeopleNeo4j(db=db)
-graph_data_loader = GraphDataLoader(repository_people=repository_people)
+
 
 
 def train():
+    from brain.config_train import settings
+
+    Logger.setup_logging(app_name=settings.app_logger.app_name)
+    init_db_connection(url=settings.neo4j.uri_neo4j)
+    repository_people = RepositoryPeopleNeo4j(db=db)
+    graph_data_loader = GraphDataLoader(repository_people=repository_people)
     logger = Logger(name="brain.main_train")
 
     logger.info(f"Splitting graph data into training, validation, and test sets with ratios "
@@ -52,6 +54,12 @@ def train():
     logger.info(f"Test Accuracy: {acc*100:.2f}%")
 
 def test():
+    from brain.config_test import settings
+    Logger.setup_logging(app_name=settings.app_logger.app_name)
+    init_db_connection(url=settings.neo4j.uri_neo4j)
+    repository_people = RepositoryPeopleNeo4j(db=db)
+    graph_data_loader = GraphDataLoader(repository_people=repository_people)
+
     logger = Logger(name="brain.main_test")
 
     logger.info(f"Selecting {settings.n_nodes_test} random nodes for testing...")

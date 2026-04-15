@@ -6,7 +6,7 @@ from core.observability.logger import Logger
 from brain.trainers.factory import TypeModelTrainer
 from brain.data.neighbor_loader import NeighborDataLoader
 from torch_geometric.loader import NeighborLoader
-from brain.config import settings
+from brain.config_train import settings
 
 
 class GraphDataLoader:

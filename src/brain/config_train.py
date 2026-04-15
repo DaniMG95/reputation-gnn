@@ -18,7 +18,6 @@ class Settings(BaseSettings):
     learning_rate: float = 0.01
     ratio_validation: float = 0.2
     ratio_test: float = 0.1
-    n_nodes_test: int = 20
     type_trainer: TypeModelTrainer = TypeModelTrainer.FULL
     num_neighbors: list[int] = [25, 15]
     batch_size: int = 128
